@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Profile | Table Tennis WHR</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Table Tennis Whole-History Rating (WHR)</h1>
+        <nav>
+            <a href="index.html">Back to Rankings</a>
+        </nav>
+    </header>
+
+    <div class="player-container">
+        <div class="player-info">
+            <h2 id="player-name">Loading player data...</h2>
+            <div class="player-details">
+                <div id="player-data">
+                    <p><strong>ID:</strong> <span id="player-id"></span></p>
+                    <p><strong>Year of Birth:</strong> <span id="player-yob"></span></p>
+                    <p><strong>Association:</strong> <span id="player-assoc"></span></p>
+                    <p><strong>Gender:</strong> <span id="player-gender"></span></p>
+                    <p><strong>Current Rating:</strong> <span id="player-rating"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="rating-history">
+            <h3>Rating History</h3>
+            <p><em>*Note: date intervals not to scale </em></p>
+            <div class="chart-container">
+                <canvas id="rating-chart"></canvas>
+            </div>
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Rating</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody id="rating-history">
+                    <tr>
+                        <td colspan="3" class="loading">Loading rating history...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-row">
+                <div class="footer-item">Match data from International Table Tennis Federation (ITTF)</div>
+                <div class="footer-divider">|</div>
+                <div class="footer-item">Website maintained by <a href="https://github.com/sx349"
+                        target="_blank">@sx349</a></div>
+            </div>
+            <div class="footer-row">
+                <div class="footer-item">WHR algorithm credited to <a href="https://www.remi-coulom.fr/"
+                        target="_blank">Rémi Coulom</a></div>
+                <div class="footer-divider">|</div>
+                <div class="footer-item">WHR Python implementation by <a href="https://github.com/wind23"
+                        target="_blank">@wind23</a></div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Table Tennis Whole-History Rating (WHR)</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="player.js"></script>
+</body>
+
+</html>

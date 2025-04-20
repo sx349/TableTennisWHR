@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Tennis Whole-History Rating (WHR)</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Table Tennis Whole-History Rating (WHR)</h1>
+        <div class="update-info">
+            <p>Last data retrieved: <span id="data-update-time"></span> (Beijing Time, UTC+8)</p>
+            <p>Last ranking updated: <span id="ranking-update-time"></span> (Beijing Time, UTC+8)</p>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="showTab('men')">Men's Singles</button>
+        <button class="tab-button" onclick="showTab('women')">Women's Singles</button>
+    </div>
+
+    <div id="men" class="tab-content active">
+        <h2>Men's Singles</h2>
+        <table id="men-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Year of Birth</th>
+                    <th>Association</th>
+                    <th>Rating</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody id="men-rankings">
+                <!-- Rankings will be loaded here -->
+                <tr>
+                    <td colspan="6" class="loading">Loading rankings...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="women" class="tab-content">
+        <h2>Women's Singles</h2>
+        <table id="women-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Year of Birth</th>
+                    <th>Association</th>
+                    <th>Rating</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody id="women-rankings">
+                <!-- Rankings will be loaded here -->
+                <tr>
+                    <td colspan="6" class="loading">Loading rankings...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-row">
+                <div class="footer-item">Match data from International Table Tennis Federation (ITTF) </div>
+                <div class="footer-divider">|</div>
+                <div class="footer-item">Website maintained by <a href="https://github.com/sx349"
+                        target="_blank">@sx349</a></div>
+            </div>
+            <div class="footer-row">
+                <div class="footer-item">WHR algorithm credited to <a href="https://www.remi-coulom.fr/"
+                        target="_blank">Rémi Coulom</a></div>
+                <div class="footer-divider">|</div>
+                <div class="footer-item">WHR Python implementation by <a href="https://github.com/wind23"
+                        target="_blank">@wind23</a></div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Table Tennis Whole-History Rating (WHR)</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
