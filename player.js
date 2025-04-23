@@ -91,9 +91,9 @@ function displayRatingHistory(ratings, gender) {
 
         html += `
             <tr>
-                <td>${date}</td>
-                <td>${rating.rating}</td>
-                <td>${rating.error}</td>
+                <td data-label="Date">${date}</td>
+                <td data-label="Rating">${rating.rating}</td>
+                <td data-label="Error">${rating.error}</td>
             </tr>
         `;
     });

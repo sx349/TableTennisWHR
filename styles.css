@@ -257,3 +257,215 @@ nav a:hover {
     color: #0056b3;
     text-decoration: underline;
 }
+
+/* Responsive tables for mobile */
+@media (max-width: 767px) {
+
+    /* First, ensure tables take full width of their container */
+    #men-table,
+    #women-table,
+    #history-table {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* For rankings tables on index page */
+    #men-table tr,
+    #women-table tr,
+    #history-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        width: 100%;
+    }
+
+    /* Hide table headers visually but maintain for screen readers */
+    #men-table thead tr,
+    #women-table thead tr,
+    #history-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    #men-table td,
+    #women-table td,
+    #history-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: left;
+        padding: 8px 8px 8px 45% !important;
+        /* Adjusted padding */
+        position: relative;
+        border-bottom: 1px solid #eee;
+        min-height: 40px;
+        /* Ensure enough height for content */
+    }
+
+    /* Ensure cells take full width */
+    #men-table td:before,
+    #women-table td:before,
+    #history-table td:before {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 40%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        content: attr(data-label);
+    }
+
+    /* Define table headers for ranking table cells */
+    #men-table td:nth-of-type(1):before,
+    #women-table td:nth-of-type(1):before {
+        content: "Rank";
+    }
+
+    #men-table td:nth-of-type(2):before,
+    #women-table td:nth-of-type(2):before {
+        content: "Player";
+    }
+
+    #men-table td:nth-of-type(3):before,
+    #women-table td:nth-of-type(3):before {
+        content: "Year of Birth";
+    }
+
+    #men-table td:nth-of-type(4):before,
+    #women-table td:nth-of-type(4):before {
+        content: "Association";
+    }
+
+    #men-table td:nth-of-type(5):before,
+    #women-table td:nth-of-type(5):before {
+        content: "Rating";
+    }
+
+    #men-table td:nth-of-type(6):before,
+    #women-table td:nth-of-type(6):before {
+        content: "Error";
+    }
+
+    /* Define table headers for history table cells */
+    #history-table td:nth-of-type(1):before {
+        content: "Date";
+    }
+
+    #history-table td:nth-of-type(2):before {
+        content: "Rating";
+    }
+
+    #history-table td:nth-of-type(3):before {
+        content: "Error";
+    }
+
+    /* Handle better alignment */
+    #men-table td,
+    #women-table td,
+    #history-table td {
+        word-break: break-word;
+    }
+
+    .player-link {
+        word-break: break-word;
+    }
+
+    /* Ensure tab content containers use full width */
+    .tab-content {
+        width: 100%;
+        padding: 15px 10px;
+        box-sizing: border-box;
+    }
+
+    /* Ensure player container uses full width */
+    .player-container {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 15px 10px;
+    }
+}
+
+/* Improve overall container widths for mobile */
+@media (max-width: 767px) {
+    .tabs {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0 10px;
+    }
+
+    .tab-button {
+        flex: 1;
+        min-width: 0;
+        padding: 8px 5px;
+        font-size: 0.9rem;
+    }
+
+    header {
+        padding: 1rem;
+    }
+
+    .update-info p {
+        font-size: 0.8rem;
+    }
+}
+
+/* Page view counter styling */
+.page-views {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+@media (max-width: 767px) {
+    .page-views {
+        margin-top: 5px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Column toggle styles */
+.column-toggles {
+    margin-bottom: 15px;
+    display: none;
+    /* Hidden by default on desktop */
+}
+
+.column-toggles p {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.toggle-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.toggle-button {
+    padding: 5px 10px;
+    background-color: #e0e0e0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle-button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+@media (max-width: 767px) {
+    .column-toggles {
+        display: block;
+    }
+}
