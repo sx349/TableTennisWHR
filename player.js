@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const playerId = urlParams.get('id');
 
     if (!playerId) {
-        showError('No player ID provided');
+        showError(getTranslation('no-player-id'));
         return;
     }
 
@@ -13,16 +13,16 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function fetchPlayerData(playerId) {
-    fetch(`player_data.php?id=${playerId}`)
+    fetch(`player_data.php?id=${playerId}&lang=${getCurrentLanguage()}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(getTranslation('network-error'));
             }
             return response.json();
         })
         .then(data => {
             if (!data.success) {
-                showError(data.message || 'Failed to load player data');
+                showError(data.message || getTranslation('failed-load'));
                 return;
             }
 
@@ -36,31 +36,47 @@ function fetchPlayerData(playerId) {
             createRatingChart(data.ratings);
 
             // Update page title
-            document.title = `${data.player.name} | Table Tennis WHR`;
+            document.title = `${data.player.name} | ${getTranslation('player-title')}`;
         })
         .catch(error => {
             console.error('Error fetching player data:', error);
-            showError('Error loading player data. Please try again later.');
+            showError(getTranslation('error-loading'));
         });
 }
 
 function displayPlayerInfo(player) {
-    document.getElementById('player-name').textContent = player.name;
+    const nameElement = document.getElementById('player-name')
+    if (getCurrentLanguage() === 'zh' && player.name_zh) {
+        nameElement.textContent = player.name_zh || player.name;
+    } else {
+        nameElement.textContent = player.name;
+    }
+
     document.getElementById('player-id').textContent = player.id;
     document.getElementById('player-yob').textContent = player.yob;
-    document.getElementById('player-assoc').textContent = player.assoc || player.ma;
-    document.getElementById('player-gender').textContent = player.gender === 'M' ? 'Male' : 'Female';
+
+    // Display association name based on current language
+    const assocElement = document.getElementById('player-assoc');
+    if (getCurrentLanguage() === 'zh' && player.assoc_zh) {
+        assocElement.textContent = player.assoc_zh || player.assoc || player.ma;
+    } else {
+        assocElement.textContent = player.assoc || player.ma;
+    }
+
+    // Set gender text based on current language
+    const genderText = player.gender === 'M' ? getTranslation('male') : getTranslation('female');
+    document.getElementById('player-gender').textContent = genderText;
 
     // Get the latest rating if available
     const latestRatingElement = document.getElementById('player-rating');
-    latestRatingElement.textContent = 'Not available';
+    latestRatingElement.textContent = getTranslation('loading');
 }
 
 function displayRatingHistory(ratings, gender) {
     const tableBody = document.getElementById('rating-history');
 
     if (!ratings || ratings.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="3" class="loading">No rating history available</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="3" class="loading">${getTranslation('no-data')}</td></tr>`;
         return;
     }
 
@@ -91,9 +107,9 @@ function displayRatingHistory(ratings, gender) {
 
         html += `
             <tr>
-                <td data-label="Date">${date}</td>
-                <td data-label="Rating">${rating.rating}</td>
-                <td data-label="Error">${rating.error}</td>
+                <td data-label="${getTranslation('date')}">${date}</td>
+                <td data-label="${getTranslation('rating')}">${rating.rating}</td>
+                <td data-label="${getTranslation('error')}">${rating.error}</td>
             </tr>
         `;
     });
@@ -101,9 +117,17 @@ function displayRatingHistory(ratings, gender) {
     tableBody.innerHTML = html;
 }
 
+// Global variable to store chart instance
+let ratingChart = null;
+
 function createRatingChart(ratings) {
     if (!ratings || ratings.length === 0) {
         return;
+    }
+
+    // Destroy existing chart if it exists
+    if (ratingChart) {
+        ratingChart.destroy();
     }
 
     // Convert dates from the database format to something chart.js can use
@@ -117,13 +141,13 @@ function createRatingChart(ratings) {
 
     const ctx = document.getElementById('rating-chart').getContext('2d');
 
-    new Chart(ctx, {
+    ratingChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: dates,
             datasets: [
                 {
-                    label: 'Rating',
+                    label: getTranslation('rating'),
                     data: ratingValues,
                     borderColor: 'rgb(0, 123, 255)',
                     backgroundColor: 'rgba(0, 123, 255, 0.1)',
@@ -164,7 +188,7 @@ function createRatingChart(ratings) {
                 y: {
                     title: {
                         display: true,
-                        text: 'Rating'
+                        text: getTranslation('rating')
                     }
                 }
             },
@@ -198,7 +222,7 @@ function formatDate(dateValue) {
 }
 
 function showError(message) {
-    document.getElementById('player-name').textContent = 'Error';
+    document.getElementById('player-name').textContent = getTranslation('loading');
     document.getElementById('player-data').innerHTML = `<p class="error">${message}</p>`;
-    document.getElementById('rating-history').innerHTML = '<tr><td colspan="3" class="loading">No data available</td></tr>';
+    document.getElementById('rating-history').innerHTML = `<tr><td colspan="3" class="loading">${getTranslation('no-data')}</td></tr>`;
 }

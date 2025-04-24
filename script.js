@@ -27,11 +27,12 @@ function showTab(tabName) {
 
 function loadRankings(gender) {
     const filename = `${gender}_ranking.json`;
+    const lang = getCurrentLanguage(); // Get current language
 
-    fetch(filename)
+    fetch(`${filename}?lang=${lang}`)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(getTranslation('network-error'));
             }
             return response.json();
         })
@@ -41,7 +42,7 @@ function loadRankings(gender) {
         .catch(error => {
             console.error('Error loading rankings:', error);
             document.getElementById(`${gender}-rankings`).innerHTML =
-                `<tr><td colspan="6" class="loading">Error loading rankings. Please try again later.</td></tr>`;
+                `<tr><td colspan="6" class="loading">${getTranslation('error-loading-rankings')}</td></tr>`;
         });
 }
 
@@ -52,25 +53,38 @@ function displayRankings(rankings, gender) {
     const topPlayers = rankings.slice(0, 100);
 
     if (topPlayers.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="loading">No ranking data available.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" class="loading">${getTranslation('no-ranking-data')}</td></tr>`;
         return;
     }
 
     let html = '';
+    const currentLang = getCurrentLanguage();
 
     topPlayers.forEach(player => {
         // Format rating and error to always have 2 decimal places
         const formattedRating = parseFloat(player.rating).toFixed(2);
         const formattedError = parseFloat(player.error).toFixed(2);
 
+        // Use Chinese name if available and language is set to Chinese
+        let displayName = player.name;
+        if (currentLang === 'zh' && player.name_zh) {
+            displayName = player.name_zh;
+        }
+
+        // Use Chinese association if available and language is set to Chinese
+        let displayAssociation = player.association;
+        if (currentLang === 'zh' && player.association_zh) {
+            displayAssociation = player.association_zh;
+        }
+
         html += `
             <tr>
-                <td data-label="Rank">${player.rank}</td>
-                <td data-label="Player"><a href="player.html?id=${player.id}" class="player-link">${player.name}</a></td>
-                <td data-label="Year of Birth">${player.yob}</td>
-                <td data-label="Association">${player.association}</td>
-                <td data-label="Rating">${formattedRating}</td>
-                <td data-label="Error">${formattedError}</td>
+                <td data-label="${getTranslation('rank')}">${player.rank}</td>
+                <td data-label="${getTranslation('player')}"><a href="player.html?id=${player.id}" class="player-link">${displayName}</a></td>
+                <td data-label="${getTranslation('year-of-birth')}">${player.yob}</td>
+                <td data-label="${getTranslation('association')}">${displayAssociation}</td>
+                <td data-label="${getTranslation('rating')}">${formattedRating}</td>
+                <td data-label="${getTranslation('error')}">${formattedError}</td>
             </tr>
         `;
     });
@@ -83,14 +97,14 @@ function fetchUpdateTimes() {
     fetch('LAST_INFO.JSON')
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error(getTranslation('network-error'));
             }
             return response.json();
         })
         .then(data => {
             // Convert times to Beijing time (UTC+8)
-            let dataTime = "Unknown";
-            let rankingTime = "Unknown";
+            let dataTime = getTranslation('unknown');
+            let rankingTime = getTranslation('unknown');
 
             if (data.data_time) {
                 dataTime = convertToBeijiingTime(data.data_time);
@@ -105,8 +119,8 @@ function fetchUpdateTimes() {
         })
         .catch(error => {
             console.error('Error loading update times:', error);
-            document.getElementById('data-update-time').textContent = 'Unknown';
-            document.getElementById('ranking-update-time').textContent = 'Unknown';
+            document.getElementById('data-update-time').textContent = getTranslation('unknown');
+            document.getElementById('ranking-update-time').textContent = getTranslation('unknown');
         });
 }
 
@@ -151,11 +165,11 @@ function addColumnToggle() {
     const toggleContainer = document.createElement('div');
     toggleContainer.className = 'column-toggles';
     toggleContainer.innerHTML = `
-        <p>Show/hide columns:</p>
+        <p>${getTranslation('show-hide-columns')}</p>
         <div class="toggle-buttons">
-            <button data-column="3" class="toggle-button active">Birth Year</button>
-            <button data-column="4" class="toggle-button active">Association</button>
-            <button data-column="6" class="toggle-button active">Error</button>
+            <button data-column="3" class="toggle-button active">${getTranslation('birth-year')}</button>
+            <button data-column="4" class="toggle-button active">${getTranslation('association')}</button>
+            <button data-column="6" class="toggle-button active">${getTranslation('error')}</button>
         </div>
     `;
 
@@ -193,17 +207,39 @@ function addColumnToggle() {
 }
 
 function addDataAttributesToTables() {
+    const headers = {
+        men: [
+            getTranslation('rank'),
+            getTranslation('player'),
+            getTranslation('year-of-birth'),
+            getTranslation('association'),
+            getTranslation('rating'),
+            getTranslation('error')
+        ],
+        women: [
+            getTranslation('rank'),
+            getTranslation('player'),
+            getTranslation('year-of-birth'),
+            getTranslation('association'),
+            getTranslation('rating'),
+            getTranslation('error')
+        ],
+        history: [
+            getTranslation('date'),
+            getTranslation('rating'),
+            getTranslation('error')
+        ]
+    };
+
     // Add data attributes to men's table
     const menTable = document.getElementById('men-table');
     if (menTable) {
-        const headers = ['Rank', 'Player', 'Year of Birth', 'Association', 'Rating', 'Error'];
         const rows = menTable.querySelectorAll('tbody tr');
-
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             cells.forEach((cell, index) => {
-                if (index < headers.length) {
-                    cell.setAttribute('data-label', headers[index]);
+                if (index < headers.men.length) {
+                    cell.setAttribute('data-label', headers.men[index]);
                 }
             });
         });
@@ -212,14 +248,12 @@ function addDataAttributesToTables() {
     // Add data attributes to women's table
     const womenTable = document.getElementById('women-table');
     if (womenTable) {
-        const headers = ['Rank', 'Player', 'Year of Birth', 'Association', 'Rating', 'Error'];
         const rows = womenTable.querySelectorAll('tbody tr');
-
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             cells.forEach((cell, index) => {
-                if (index < headers.length) {
-                    cell.setAttribute('data-label', headers[index]);
+                if (index < headers.women.length) {
+                    cell.setAttribute('data-label', headers.women[index]);
                 }
             });
         });
@@ -228,14 +262,12 @@ function addDataAttributesToTables() {
     // Add data attributes to history table
     const historyTable = document.getElementById('history-table');
     if (historyTable) {
-        const headers = ['Date', 'Rating', 'Error'];
         const rows = historyTable.querySelectorAll('tbody tr');
-
         rows.forEach(row => {
             const cells = row.querySelectorAll('td');
             cells.forEach((cell, index) => {
-                if (index < headers.length) {
-                    cell.setAttribute('data-label', headers[index]);
+                if (index < headers.history.length) {
+                    cell.setAttribute('data-label', headers.history[index]);
                 }
             });
         });

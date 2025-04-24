@@ -192,7 +192,9 @@ def get_new_players(session, last_info, new_matches_raw):
         new_players["ma"] = new_players["name"].apply(
             lambda x: x.split("(")[1].rstrip(")")
         )
-        new_players["name"] = new_players["name"].apply(lambda x: x.split(" ")[0])
+        new_players["name"] = new_players["name"].apply(
+            lambda x: x.split("(")[0].strip(" ")
+        )
         new_players = new_players.drop(columns="profile")
 
         last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -276,14 +278,18 @@ def rankings(ratings, all_players, w2):
     latest = latest.rename(columns={"name": "id"})
     latest = latest.merge(all_players, on="id", how="left")
     latest = latest.sort_values("rating", ascending=False).reset_index(drop=True)
+    latest["name_zh"] = latest["name_zh"].fillna(latest["name"])
+    latest["assoc_zh"] = latest["assoc_zh"].fillna("")
     result = []
     for idx, row in latest.iterrows():
         data = {
             "rank": idx + 1,
             "id": row["id"],
             "name": row["name"],
+            "name_zh": row["name_zh"],
             "yob": row["yob"],
             "association": row["ma"],
+            "association_zh": row["assoc_zh"],
             "rating": np.round(float(row["rating"]), 2),
             "error": float(row["new_error"]),
             "adjusted_rating": np.round(float(row["adjusted_rating"]), 2),
@@ -384,10 +390,6 @@ def daily_update():
         session, last_info = init_session()
         new_events = get_new_events(session, last_info)
 
-        conn = sqlite3.connect("DATA.DB")
-        all_players = pd.read_sql_query("SELECT * FROM players", conn)
-        conn.close()
-
         if not new_events.empty:
             new_matches_raw = get_new_matches_raw(session, last_info)
             get_new_players(session, last_info, new_matches_raw)
@@ -399,6 +401,16 @@ def daily_update():
             process_new_matches(last_info, all_players, new_matches_raw, new_events)
             men_single_rating(last_info)
             women_single_rating(last_info)
+
+        conn = sqlite3.connect("DATA.DB")
+        all_players = pd.read_sql_query("SELECT * FROM players", conn)
+        pc = pd.read_sql_query("SELECT * FROM players_chinese", conn)
+        ac = pd.read_sql_query("SELECT * FROM associations_chinese", conn)
+        conn.close()
+
+        all_players = all_players.merge(
+            pc[["id", "name_zh"]], on="id", how="left"
+        ).merge(ac, on="assoc", how="left")
 
         men_single_ranking(last_info, all_players)
         women_single_ranking(last_info, all_players)

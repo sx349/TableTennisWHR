@@ -1,0 +1,38 @@
+/* Styles for language switcher button */
+.language-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.language-button:hover {
+    background-color: #555;
+}
+
+/* Responsive styles for language switcher */
+@media (max-width: 768px) {
+    .language-button {
+        top: 10px;
+        right: 10px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Add relative positioning to header for absolute positioning of language button */
+header {
+    position: relative;
+}
+
+/* Add styles for Chinese text if needed */
+.zh-text {
+    font-family: 'Arial', 'Microsoft YaHei', '微软雅黑', sans-serif;
+}

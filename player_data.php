@@ -9,6 +9,11 @@ $dbPath = "DATA.DB";
 // Get player ID from the query string
 $playerId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
+
+// Get language preference (default to English if not specified)
+$lang = isset($_GET['lang']) ? $_GET['lang'] : 'en';
+
+
 // Initialize response array
 $response = [
     'success' => false,
@@ -17,9 +22,30 @@ $response = [
     'ratings' => []
 ];
 
+
+// Define error messages in both languages
+$errorMessages = [
+    'en' => [
+        'invalid_id' => 'Invalid player ID',
+        'player_not_found' => 'Player not found',
+        'db_error' => 'Database error: '
+    ],
+    'zh' => [
+        'invalid_id' => '无效的球员ID',
+        'player_not_found' => '未找到球员',
+        'db_error' => '数据库错误：'
+    ]
+];
+
+// Get appropriate error message based on language
+function getErrorMessage($key, $lang) {
+    global $errorMessages;
+    return isset($errorMessages[$lang][$key]) ? $errorMessages[$lang][$key] : $errorMessages['en'][$key];
+}
+
 // Check if player ID is provided
 if ($playerId <= 0) {
-    $response['message'] = 'Invalid player ID';
+    $response['message'] = getErrorMessage('invalid_id', $lang);
     echo json_encode($response);
     exit;
 }
@@ -29,13 +55,18 @@ try {
     $db = new SQLite3($dbPath);
     
     // Get player information
-    $stmt = $db->prepare('SELECT id, name, gender, yob, assoc, ma FROM players WHERE id = :id');
+    $stmt = $db->prepare('SELECT p.id, p.name, p.gender, p.yob, p.assoc, p.ma, 
+                         pc.name_zh, ac.assoc_zh 
+                         FROM players p 
+                         LEFT JOIN players_chinese pc ON p.id = pc.id 
+                         LEFT JOIN associations_chinese ac ON p.assoc = ac.assoc 
+                         WHERE p.id = :id');
     $stmt->bindValue(':id', $playerId, SQLITE3_INTEGER);
     $result = $stmt->execute();
     $player = $result->fetchArray(SQLITE3_ASSOC);
     
     if (!$player) {
-        $response['message'] = 'Player not found';
+        $response['message'] = getErrorMessage('player_not_found', $lang);
         echo json_encode($response);
         exit;
     }
@@ -65,7 +96,7 @@ try {
     $response['ratings'] = $ratings;
     
 } catch (Exception $e) {
-    $response['message'] = 'Database error: ' . $e->getMessage();
+    $response['message'] =getErrorMessage('db_error', $lang) . $e->getMessage();
 }
 
 // Output the response as JSON

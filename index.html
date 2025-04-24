@@ -6,63 +6,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Table Tennis Whole-History Rating (WHR)</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="language-switcher.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <script src="translations.js"></script>
 </head>
 
 <body>
     <header>
-        <h1>Table Tennis Whole-History Rating (WHR)</h1>
+        <h1 data-i18n="main-title">Table Tennis Whole-History Rating (WHR)</h1>
         <div class="update-info">
-            <p>Last data retrieved: <span id="data-update-time"></span> (Beijing Time, UTC+8)</p>
-            <p>Last ranking updated: <span id="ranking-update-time"></span> (Beijing Time, UTC+8)</p>
+            <p><span data-i18n="last-data">Last data retrieved:</span> <span id="data-update-time"></span> <span
+                    data-i18n="beijing-time">(Beijing Time, UTC+8)</span></p>
+            <p><span data-i18n="last-ranking">Last ranking updated:</span> <span id="ranking-update-time"></span> <span
+                    data-i18n="beijing-time">(Beijing Time, UTC+8)</span></p>
         </div>
     </header>
 
     <div class="tabs">
-        <button class="tab-button active" onclick="showTab('men')">Men's Singles</button>
-        <button class="tab-button" onclick="showTab('women')">Women's Singles</button>
+        <button class="tab-button active" onclick="showTab('men')" data-i18n="men-singles">Men's Singles</button>
+        <button class="tab-button" onclick="showTab('women')" data-i18n="women-singles">Women's Singles</button>
     </div>
 
     <div id="men" class="tab-content active">
-        <h2>Men's Singles</h2>
+        <h2 data-i18n="men-singles">Men's Singles</h2>
         <table id="men-table">
             <thead>
                 <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th>Year of Birth</th>
-                    <th>Association</th>
-                    <th>Rating</th>
-                    <th>Error</th>
+                    <th data-i18n="rank">Rank</th>
+                    <th data-i18n="player">Player</th>
+                    <th data-i18n="year-of-birth">Year of Birth</th>
+                    <th data-i18n="association">Association</th>
+                    <th data-i18n="rating">Rating</th>
+                    <th data-i18n="error">Error</th>
                 </tr>
             </thead>
             <tbody id="men-rankings">
                 <!-- Rankings will be loaded here -->
                 <tr>
-                    <td colspan="6" class="loading">Loading rankings...</td>
+                    <td colspan="6" class="loading" data-i18n="loading-rankings">Loading rankings...</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
     <div id="women" class="tab-content">
-        <h2>Women's Singles</h2>
+        <h2 data-i18n="women-singles">Women's Singles</h2>
         <table id="women-table">
             <thead>
                 <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th>Year of Birth</th>
-                    <th>Association</th>
-                    <th>Rating</th>
-                    <th>Error</th>
+                    <th data-i18n="rank">Rank</th>
+                    <th data-i18n="player">Player</th>
+                    <th data-i18n="year-of-birth">Year of Birth</th>
+                    <th data-i18n="association">Association</th>
+                    <th data-i18n="rating">Rating</th>
+                    <th data-i18n="error">Error</th>
                 </tr>
             </thead>
             <tbody id="women-rankings">
                 <!-- Rankings will be loaded here -->
                 <tr>
-                    <td colspan="6" class="loading">Loading rankings...</td>
+                    <td colspan="6" class="loading" data-i18n="loading-rankings">Loading rankings...</td>
                 </tr>
             </tbody>
         </table>
@@ -71,25 +75,39 @@
     <footer>
         <div class="footer-content">
             <div class="footer-row">
-                <div class="footer-item">Match data from International Table Tennis Federation (ITTF) </div>
+                <div class="footer-item"><span data-i18n="match-data">Match data from</span>
+                    <a href="https://results.ittf.link/index.php" target="_blank" data-i18n="match-ittf">International
+                        Table Tennis Federation (ITTF)</a>
+                </div>
                 <div class="footer-divider">|</div>
-                <div class="footer-item">Website maintained by <a href="https://github.com/sx349"
-                        target="_blank">@sx349</a></div>
+                <div class="footer-item">
+                    <span data-i18n="website-maintained">Website maintained by</span>
+                    <a href="https://github.com/sx349/TableTennisWHR" target="_blank">@sx349</a>
+                </div>
             </div>
             <div class="footer-row">
-                <div class="footer-item">WHR algorithm credited to <a href="https://www.remi-coulom.fr/"
-                        target="_blank">Rémi Coulom</a></div>
+                <div class="footer-item">
+                    <span data-i18n="whr-algorithm">WHR algorithm credited to</span>
+                    <a href="https://www.remi-coulom.fr/WHR/" target="_blank">Rémi Coulom</a>
+                </div>
                 <div class="footer-divider">|</div>
-                <div class="footer-item">WHR Python implementation by <a href="https://github.com/wind23"
-                        target="_blank">@wind23</a></div>
+                <div class="footer-item">
+                    <span data-i18n="whr-implementation">WHR Python implementation by</span>
+                    <a href="https://github.com/wind23/whole_history_rating" target="_blank">@wind23</a>
+                </div>
             </div>
             <div class="copyright">
-                <p>&copy; 2025 Table Tennis Whole-History Rating (WHR)</p>
+                <p data-i18n="copyright">&copy; 2025 Table Tennis Whole-History Rating (WHR)</p>
                 <div class="page-views">
-                    <span id="busuanzi_container_site_pv" style='display:none'>Total Views: <span
-                            id="busuanzi_value_site_pv"></span></span>
-                    | <span id="busuanzi_container_site_uv" style='display:none'>Total Visitors: <span
-                            id="busuanzi_value_site_uv"></span></span>
+                    <span id="busuanzi_container_site_pv" style='display:none'>
+                        <span data-i18n="total-views">Total Views:</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                    |
+                    <span id="busuanzi_container_site_uv" style='display:none'>
+                        <span data-i18n="total-visitors">Total Visitors:</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
                 </div>
             </div>
         </div>
