@@ -161,6 +161,11 @@ function addColumnToggle() {
     // Only add on mobile
     if (window.innerWidth > 767) return;
 
+    // Remove existing toggle containers first to prevent duplicates
+    document.querySelectorAll('.column-toggles').forEach(container => {
+        container.remove();
+    });
+
     // Create toggle buttons container
     const toggleContainer = document.createElement('div');
     toggleContainer.className = 'column-toggles';

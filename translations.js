@@ -150,8 +150,21 @@ function setLanguage(lang) {
 
     // Update page title
     if (window.location.pathname.includes('player.html')) {
-        // For player page, keep the player name but translate the rest
-        const playerName = document.title.split(' | ')[0];
+        // For player page, we need to preserve player name but translate the rest
+        const playerNameElement = document.getElementById('player-name');
+        let playerName = playerNameElement ? playerNameElement.textContent : '';
+
+        // If we're switching to Chinese and there's a Chinese name available, use it
+        if (lang === 'zh') {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playerId = urlParams.get('id');
+            if (playerId) {
+                // We'll update the player name when the data is fetched
+                // The title will be updated in the fetchPlayerData function
+                return; // Return early as the title will be updated by fetchPlayerData
+            }
+        }
+
         document.title = `${playerName} | ${getTranslation('player-title')}`;
     } else {
         // For main page
@@ -177,6 +190,8 @@ function toggleLanguage() {
         loadRankings('women');
         fetchUpdateTimes();
         setTimeout(addColumnToggle, 500);
+        // Update the main page title
+        document.title = getTranslation('main-title');
     }
 
     // Reload player data if on player page
@@ -187,7 +202,11 @@ function toggleLanguage() {
             // Add a small delay to ensure any pending operations are completed
             setTimeout(() => {
                 fetchPlayerData(playerId);
+                // The title will be updated in fetchPlayerData
             }, 50);
+        } else {
+            // If no player ID for some reason, just update with generic title
+            document.title = getTranslation('player-title');
         }
     }
 }

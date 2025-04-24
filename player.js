@@ -35,8 +35,17 @@ function fetchPlayerData(playerId) {
             // Create rating chart
             createRatingChart(data.ratings);
 
+            // Update page title based on current language
+            const currentLang = getCurrentLanguage();
+            let displayName = data.player.name;
+
+            // Use Chinese name if available and language is set to Chinese
+            if (currentLang === 'zh' && data.player.name_zh) {
+                displayName = data.player.name_zh;
+            }
+
             // Update page title
-            document.title = `${data.player.name} | ${getTranslation('player-title')}`;
+            document.title = `${displayName} | ${getTranslation('player-title')}`;
         })
         .catch(error => {
             console.error('Error fetching player data:', error);
