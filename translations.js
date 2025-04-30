@@ -148,6 +148,9 @@ function setLanguage(lang) {
     localStorage.setItem('language', lang);
     applyTranslations();
 
+    // Update responsive table headers
+    updateResponsiveTableHeaders();
+
     // Update page title
     if (window.location.pathname.includes('player.html')) {
         // For player page, we need to preserve player name but translate the rest
@@ -192,6 +195,8 @@ function toggleLanguage() {
         setTimeout(addColumnToggle, 500);
         // Update the main page title
         document.title = getTranslation('main-title');
+        // Update responsive table headers
+        updateResponsiveTableHeaders();
     }
 
     // Reload player data if on player page
@@ -208,6 +213,8 @@ function toggleLanguage() {
             // If no player ID for some reason, just update with generic title
             document.title = getTranslation('player-title');
         }
+        // Update responsive table headers
+        updateResponsiveTableHeaders();
     }
 }
 
@@ -246,4 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
             header.appendChild(languageSwitcher);
         }
     }
+
+    // Initialize responsive table headers
+    updateResponsiveTableHeaders();
 });
