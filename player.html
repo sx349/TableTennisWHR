@@ -11,15 +11,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
     <script src="translations.js"></script>
+    <script src="components.js"></script>
 </head>
 
 <body>
-    <header>
-        <h1 data-i18n="main-title">Table Tennis Whole-History Rating (WHR)</h1>
-        <nav>
-            <a href="index.html" data-i18n="back-to-rankings">Back to Rankings</a>
-        </nav>
-    </header>
+    <!-- Header component will be loaded here -->
+    <div id="header-container"></div>
+
 
     <div class="player-container">
         <div class="player-info">
@@ -58,46 +56,8 @@
         </div>
     </div>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-row">
-                <div class="footer-item"><span data-i18n="match-data">Match data from</span>
-                    <a href="https://results.ittf.link/index.php" target="_blank" data-i18n="match-ittf">International
-                        Table Tennis Federation (ITTF)</a>
-                </div>
-                <div class="footer-divider">|</div>
-                <div class="footer-item">
-                    <span data-i18n="website-maintained">Website maintained by</span>
-                    <a href="https://github.com/sx349/TableTennisWHR" target="_blank">@sx349</a>
-                </div>
-            </div>
-            <div class="footer-row">
-                <div class="footer-item">
-                    <span data-i18n="whr-algorithm">WHR algorithm credited to</span>
-                    <a href="https://www.remi-coulom.fr/WHR/" target="_blank">Rémi Coulom</a>
-                </div>
-                <div class="footer-divider">|</div>
-                <div class="footer-item">
-                    <span data-i18n="whr-implementation">WHR Python implementation by</span>
-                    <a href="https://github.com/wind23/whole_history_rating" target="_blank">@wind23</a>
-                </div>
-            </div>
-            <div class="copyright">
-                <p data-i18n="copyright">&copy; 2025 Table Tennis Whole-History Rating (WHR)</p>
-                <div class="page-views">
-                    <span id="busuanzi_container_site_pv" style='display:none'>
-                        <span data-i18n="total-views">Total Views:</span>
-                        <span id="busuanzi_value_site_pv"></span>
-                    </span>
-                    |
-                    <span id="busuanzi_container_site_uv" style='display:none'>
-                        <span data-i18n="total-visitors">Total Visitors:</span>
-                        <span id="busuanzi_value_site_uv"></span>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <!-- Footer component will be loaded here -->
+    <div id="footer-container"></div>
 
     <script src="player.js"></script>
 </body>

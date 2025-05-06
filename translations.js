@@ -235,6 +235,7 @@ function applyTranslations() {
     });
 }
 
+
 // Initialize language on page load
 document.addEventListener('DOMContentLoaded', function () {
     applyTranslations();
