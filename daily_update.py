@@ -71,10 +71,18 @@ def get_new_events(session, last_info):
         "https://results.ittf.link/index.php/events/list/27?resetfilters=0&clearordering=0&clearfilters=0&limit27=200&format=json"
     )
     data = response.json()[0]
-    new_events = pd.DataFrame(data)[
-        ["vw_tournaments___tournament_id_raw", "vw_tournaments___tour_end_raw"]
+    new_events = pd.DataFrame(data)
+    new_events = new_events[
+        [
+            "vw_tournaments___tournament_id_raw",
+            "vw_tournaments___tour_end_raw",
+            "vw_tournaments___matches",
+        ]
     ]
-    new_events.columns = ["tournament", "end_date"]
+    new_events.columns = ["tournament", "end_date", "matches"]
+    new_events["matches"] = new_events["matches"].apply(
+        lambda x: int(x.split(">")[1].split("<")[0])
+    )
     new_events = new_events.set_index("tournament")
 
     last_event = last_info["event"]
@@ -87,62 +95,59 @@ def get_new_events(session, last_info):
         with open("LAST_INFO.JSON", "w") as file:
             json.dump(last_info, file)
         conn = sqlite3.connect("DATA.DB")
-        new_events.to_sql("events", conn, if_exists="append", index=False)
+        new_events[["tournament", "end_date"]].to_sql(
+            "events", conn, if_exists="append", index=False
+        )
         conn.close()
 
     return new_events
 
 
-def get_new_matches_raw(session, last_info):
+def get_new_matches_raw(session, last_info, new_events):
 
-    last_match = last_info["match"]
     df_list = []
-    flag = True
-    page = 0
+    for _, row in new_events.iterrows():
+        event = row["tournament"]
+        matches = row["matches"]
 
-    while flag:
-        url = f"https://results.ittf.link/index.php?listid=31&Itemid=250&limit31={MATCHES_PER_PAGE}&limitstart31={page * MATCHES_PER_PAGE}&format=json"
-        response = session.get(url)
-        data = response.json()
-        sleep_time = random.uniform(0, 1)
-        time.sleep(sleep_time)
-        df = pd.DataFrame(data[0])
-        df = df[
-            [
-                "vw_matches___id_raw",
-                "vw_matches___tournament_id_raw",
-                "vw_matches___player_a_id_raw",
-                "vw_matches___player_b_id_raw",
-                "vw_matches___player_x_id_raw",
-                "vw_matches___player_y_id_raw",
-                "vw_matches___res_raw",
+        pages = (matches - 1) // MATCHES_PER_PAGE + 1
+        for page in range(pages):
+            url = f"https://results.ittf.link/index.php?listid=68&Itemid=441&resetfilters=1&abc={event}&limit68={MATCHES_PER_PAGE}&limitstart68={page * MATCHES_PER_PAGE}&vw_matches___tournament_id_raw[value][]={event}&format=json"
+            response = session.get(url)
+            data = response.json()
+            sleep_time = random.uniform(0, 1)
+            time.sleep(sleep_time)
+            df = pd.DataFrame(data[0])
+            df = df[
+                [
+                    "vw_matches___id_raw",
+                    "vw_matches___tournament_id_raw",
+                    "vw_matches___player_a_id_raw",
+                    "vw_matches___player_b_id_raw",
+                    "vw_matches___player_x_id_raw",
+                    "vw_matches___player_y_id_raw",
+                    "vw_matches___res_raw",
+                ]
             ]
-        ]
-        df.columns = [
-            "match",
-            "tournament",
-            "player_a",
-            "player_b",
-            "player_x",
-            "player_y",
-            "result",
-        ]
-        df["score_a"] = df["result"].apply(lambda x: int(x.split("-")[0].strip()))
-        df["score_x"] = df["result"].apply(lambda x: int(x.split("-")[1].strip()))
-        df["res"] = "L"
-        df.iloc[df["score_a"] > df["score_x"], -1] = "W"
-        df.iloc[df["score_a"] == df["score_x"], -1] = "D"
-        if last_match in df["match"].unique():
-            flag = False
-            df = df.set_index("match").loc[:last_match].iloc[:-1].reset_index()
-        df_list.append(df)
-        page += 1
+            df.columns = [
+                "match",
+                "tournament",
+                "player_a",
+                "player_b",
+                "player_x",
+                "player_y",
+                "result",
+            ]
+            df["score_a"] = df["result"].apply(lambda x: int(x.split("-")[0].strip()))
+            df["score_x"] = df["result"].apply(lambda x: int(x.split("-")[1].strip()))
+            df["res"] = "L"
+            df.iloc[df["score_a"] > df["score_x"], -1] = "W"
+            df.iloc[df["score_a"] == df["score_x"], -1] = "D"
+            df_list.append(df)
 
     new_matches_raw = pd.concat(df_list).reset_index(drop=True)
 
     if not new_matches_raw.empty:
-        last_match = new_matches_raw.iloc[0, 0]
-        last_info["match"] = int(last_match)
         last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open("LAST_INFO.JSON", "w") as file:
             json.dump(last_info, file)
@@ -209,7 +214,9 @@ def get_new_players(session, last_info, new_matches_raw):
 
 def process_new_matches(last_info, all_players, new_matches_raw, new_events):
 
-    new_matches = new_matches_raw.merge(new_events, on="tournament", how="left")
+    new_matches = new_matches_raw.merge(
+        new_events[["tournament", "end_date"]], on="tournament", how="left"
+    )
     for suffix in ["_a", "_b", "_x", "_y"]:
         new_matches = (
             new_matches.merge(
@@ -391,7 +398,7 @@ def daily_update():
         new_events = get_new_events(session, last_info)
 
         if not new_events.empty:
-            new_matches_raw = get_new_matches_raw(session, last_info)
+            new_matches_raw = get_new_matches_raw(session, last_info, new_events)
             get_new_players(session, last_info, new_matches_raw)
 
             conn = sqlite3.connect("DATA.DB")
