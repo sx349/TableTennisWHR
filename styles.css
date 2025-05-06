@@ -425,3 +425,225 @@ nav a:hover {
         display: block;
     }
 }
+
+/* Navigation bar in header */
+.main-nav {
+    margin: 0.5rem 0;
+}
+
+.main-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.main-nav ul li {
+    margin: 0 1rem;
+}
+
+.main-nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+}
+
+.main-nav ul li a:hover {
+    background-color: #333;
+}
+
+/* History table styles */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    table-layout: fixed;
+    /* Fixed layout for consistent column widths */
+}
+
+/* Player cell layout */
+.player-cell {
+    align-items: center;
+    justify-content: center;
+    padding: 6px 4px;
+    line-height: 1.3;
+}
+
+/* Player name style */
+.player-name {
+    font-size: 0.95rem;
+    max-width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Player rating style */
+.player-rating {
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 2px;
+}
+
+.history-table th:first-child,
+.history-table td:first-child {
+    width: 15%;
+    /* Slightly wider date column */
+    min-width: 110px;
+}
+
+.history-table th:not(:first-child),
+.history-table td:not(:first-child) {
+    width: 17%;
+    /* Player columns width (5 columns at 17% each = 85%, plus 15% for date = 100%) */
+    min-width: 90px;
+    padding: 8px 4px;
+}
+
+
+.date-link {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.date-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Snapshot page styles */
+.snapshot-header {
+    max-width: 1200px;
+    margin: 1rem auto;
+    text-align: center;
+}
+
+.snapshot-header h2 {
+    margin-bottom: 0.5rem;
+}
+
+.snapshot-header p {
+    margin-top: 0.25rem;
+}
+
+.snapshot-header a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.snapshot-header a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Loader styles */
+.loader {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+    font-style: italic;
+}
+
+/* Responsive styles for the navigation */
+@media (max-width: 768px) {
+    .main-nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .main-nav ul li {
+        margin: 0.25rem 0;
+    }
+}
+
+/* Responsive styles for history table on mobile */
+@media (max-width: 767px) {
+
+    .history-table th:not(:first-child),
+    .history-table td:not(:first-child) {
+        display: none;
+        /* Hide all player columns initially */
+    }
+
+    /* Show only the top 3 players on mobile */
+    .history-table th:nth-child(2),
+    .history-table td:nth-child(2),
+    .history-table th:nth-child(3),
+    .history-table td:nth-child(3),
+    .history-table th:nth-child(4),
+    .history-table td:nth-child(4) {
+        display: table-cell;
+        width: 28.33%;
+        /* Evenly distribute the remaining 85% among 3 columns */
+    }
+
+    /* Style for the date column */
+    .history-table th:first-child,
+    .history-table td:first-child {
+        width: 15%;
+    }
+
+    /* Make player name font smaller on mobile */
+    .player-name {
+        font-size: 0.85rem;
+    }
+
+    /* Make player rating font smaller on mobile */
+    .player-rating {
+        font-size: 0.75rem;
+    }
+}
+
+/* Active navigation link style */
+.active-nav {
+    background-color: #333 !important;
+    font-weight: bold;
+}
+
+/* Styles for the update info container */
+.update-info-container {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.update-info {
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 1rem;
+    display: inline-block;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.update-info p {
+    margin: 0.25rem 0;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .update-info-container {
+        padding: 0 10px;
+    }
+
+    .update-info {
+        padding: 8px 10px;
+        width: 100%;
+    }
+
+    .update-info p {
+        font-size: 0.8rem;
+    }
+}

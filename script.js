@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     loadRankings('women');
 
     // Show update times
-    fetchUpdateTimes();
+    setTimeout(fetchUpdateTimes, 200);
     setTimeout(addColumnToggle, 500); // Slight delay to ensure tables are loaded
 });
 
@@ -277,80 +277,4 @@ function addDataAttributesToTables() {
             });
         });
     }
-}
-
-function updateResponsiveTableHeaders() {
-    // Get current language
-    const currentLang = getCurrentLanguage();
-
-    // Create or update the stylesheet for responsive table headers
-    let styleElement = document.getElementById('responsive-headers-style');
-
-    // If the style element doesn't exist, create it
-    if (!styleElement) {
-        styleElement = document.createElement('style');
-        styleElement.id = 'responsive-headers-style';
-        document.head.appendChild(styleElement);
-    }
-
-    // Get translations for the headers
-    const rankText = getTranslation('rank');
-    const playerText = getTranslation('player');
-    const birthYearText = getTranslation('year-of-birth');
-    const associationText = getTranslation('association');
-    const ratingText = getTranslation('rating');
-    const errorText = getTranslation('error');
-    const dateText = getTranslation('date');
-
-    // Define the CSS with the translated headers
-    const css = `
-        @media (max-width: 767px) {
-            /* Define table headers for ranking table cells */
-            #men-table td:nth-of-type(1):before,
-            #women-table td:nth-of-type(1):before {
-                content: "${rankText}";
-            }
-            
-            #men-table td:nth-of-type(2):before,
-            #women-table td:nth-of-type(2):before {
-                content: "${playerText}";
-            }
-            
-            #men-table td:nth-of-type(3):before,
-            #women-table td:nth-of-type(3):before {
-                content: "${birthYearText}";
-            }
-            
-            #men-table td:nth-of-type(4):before,
-            #women-table td:nth-of-type(4):before {
-                content: "${associationText}";
-            }
-            
-            #men-table td:nth-of-type(5):before,
-            #women-table td:nth-of-type(5):before {
-                content: "${ratingText}";
-            }
-            
-            #men-table td:nth-of-type(6):before,
-            #women-table td:nth-of-type(6):before {
-                content: "${errorText}";
-            }
-            
-            /* Define table headers for history table cells */
-            #history-table td:nth-of-type(1):before {
-                content: "${dateText}";
-            }
-            
-            #history-table td:nth-of-type(2):before {
-                content: "${ratingText}";
-            }
-            
-            #history-table td:nth-of-type(3):before {
-                content: "${errorText}";
-            }
-        }
-    `;
-
-    // Update the stylesheet content
-    styleElement.textContent = css;
 }

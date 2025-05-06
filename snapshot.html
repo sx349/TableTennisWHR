@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title data-i18n="main-title">Table Tennis Whole-History Rating (WHR)</title>
+    <title data-i18n="snapshot-title">Historical Snapshot | Table Tennis WHR</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="language-switcher.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -17,12 +17,20 @@
     <!-- Header component will be loaded here -->
     <div id="header-container"></div>
 
+    <div class="snapshot-header">
+        <h2 id="snapshot-date-display">
+            <span id="snapshot-for-text" data-i18n="snapshot-for">Rankings Snapshot for</span>
+            <span id="selected-date">Loading...</span>
+        </h2>
+    </div>
+
     <div class="tabs">
         <button class="tab-button active" onclick="showTab('men')" data-i18n="men-singles">Men's Singles</button>
         <button class="tab-button" onclick="showTab('women')" data-i18n="women-singles">Women's Singles</button>
     </div>
 
     <div id="men" class="tab-content active">
+        <div class="loader" id="men-loader" data-i18n="loading-snapshot">Loading snapshot data...</div>
         <table id="men-table">
             <thead>
                 <tr>
@@ -36,14 +44,12 @@
             </thead>
             <tbody id="men-rankings">
                 <!-- Rankings will be loaded here -->
-                <tr>
-                    <td colspan="6" class="loading" data-i18n="loading-rankings">Loading rankings...</td>
-                </tr>
             </tbody>
         </table>
     </div>
 
     <div id="women" class="tab-content">
+        <div class="loader" id="women-loader" data-i18n="loading-snapshot">Loading snapshot data...</div>
         <table id="women-table">
             <thead>
                 <tr>
@@ -57,9 +63,6 @@
             </thead>
             <tbody id="women-rankings">
                 <!-- Rankings will be loaded here -->
-                <tr>
-                    <td colspan="6" class="loading" data-i18n="loading-rankings">Loading rankings...</td>
-                </tr>
             </tbody>
         </table>
     </div>
@@ -67,7 +70,7 @@
     <!-- Footer component will be loaded here -->
     <div id="footer-container"></div>
 
-    <script src="script.js"></script>
+    <script src="snapshot.js"></script>
 </body>
 
 </html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title data-i18n="main-title">Table Tennis Whole-History Rating (WHR)</title>
+    <title data-i18n="history-title">Historical Rankings | Table Tennis WHR</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="language-switcher.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -23,43 +23,39 @@
     </div>
 
     <div id="men" class="tab-content active">
-        <table id="men-table">
+        <div class="loader" id="men-loader" data-i18n="loading-history">Loading historical rankings...</div>
+        <table id="men-history-table" class="history-table">
             <thead>
                 <tr>
-                    <th data-i18n="rank">Rank</th>
-                    <th data-i18n="player">Player</th>
-                    <th data-i18n="year-of-birth">Year of Birth</th>
-                    <th data-i18n="association">Association</th>
-                    <th data-i18n="rating">Rating</th>
-                    <th data-i18n="error">Error</th>
+                    <th data-i18n="eval-date">Evaluation Date</th>
+                    <th data-i18n="rank-1">Rank 1</th>
+                    <th data-i18n="rank-2">Rank 2</th>
+                    <th data-i18n="rank-3">Rank 3</th>
+                    <th data-i18n="rank-4">Rank 4</th>
+                    <th data-i18n="rank-5">Rank 5</th>
                 </tr>
             </thead>
-            <tbody id="men-rankings">
-                <!-- Rankings will be loaded here -->
-                <tr>
-                    <td colspan="6" class="loading" data-i18n="loading-rankings">Loading rankings...</td>
-                </tr>
+            <tbody id="men-history-data">
+                <!-- Historical data will be loaded here -->
             </tbody>
         </table>
     </div>
 
     <div id="women" class="tab-content">
-        <table id="women-table">
+        <div class="loader" id="women-loader" data-i18n="loading-history">Loading historical rankings...</div>
+        <table id="women-history-table" class="history-table">
             <thead>
                 <tr>
-                    <th data-i18n="rank">Rank</th>
-                    <th data-i18n="player">Player</th>
-                    <th data-i18n="year-of-birth">Year of Birth</th>
-                    <th data-i18n="association">Association</th>
-                    <th data-i18n="rating">Rating</th>
-                    <th data-i18n="error">Error</th>
+                    <th data-i18n="eval-date">Evaluation Date</th>
+                    <th data-i18n="rank-1">Rank 1</th>
+                    <th data-i18n="rank-2">Rank 2</th>
+                    <th data-i18n="rank-3">Rank 3</th>
+                    <th data-i18n="rank-4">Rank 4</th>
+                    <th data-i18n="rank-5">Rank 5</th>
                 </tr>
             </thead>
-            <tbody id="women-rankings">
-                <!-- Rankings will be loaded here -->
-                <tr>
-                    <td colspan="6" class="loading" data-i18n="loading-rankings">Loading rankings...</td>
-                </tr>
+            <tbody id="women-history-data">
+                <!-- Historical data will be loaded here -->
             </tbody>
         </table>
     </div>
@@ -67,7 +63,7 @@
     <!-- Footer component will be loaded here -->
     <div id="footer-container"></div>
 
-    <script src="script.js"></script>
+    <script src="history.js"></script>
 </body>
 
 </html>
