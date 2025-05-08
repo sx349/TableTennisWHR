@@ -103,8 +103,8 @@ function displaySnapshotRankings(rankings, gender) {
 
         // Use Chinese association if available and language is set to Chinese
         let displayAssociation = player.association;
-        if (currentLang === 'zh' && player.association_zh) {
-            displayAssociation = player.association_zh;
+        if (currentLang === 'zh' && player.assoc_zh) {
+            displayAssociation = player.assoc_zh;
         }
 
         html += `
