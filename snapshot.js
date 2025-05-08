@@ -3,45 +3,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const date = urlParams.get('date');
     const initialGender = urlParams.get('gender') || 'men';
-    
+
     if (!date) {
         showError(getTranslation('no-date-provided'));
         return;
     }
-    
+
     // Display the date
     const formattedDate = formatDate(date);
     document.getElementById('selected-date').textContent = formattedDate;
-    
+
     // Update page title with the date
     document.title = `${formattedDate} | ${getTranslation('snapshot-title')}`;
-    
+
     // Set the initial active tab based on the gender parameter
     showTab(initialGender);
-    
+
     // Load ranking snapshots
     loadSnapshotRankings('men', date);
     loadSnapshotRankings('women', date);
-
-    // Add event listener for language switcher
-    const languageSwitcher = document.getElementById('language-switcher');
-    if (languageSwitcher) {
-        languageSwitcher.addEventListener('click', function() {
-            // Reload rankings after a slight delay to allow language to change
-            setTimeout(function() {
-                const currentDate = urlParams.get('date');
-                loadSnapshotRankings('men', currentDate);
-                loadSnapshotRankings('women', currentDate);
-                
-                // Also update page title with the translated text
-                document.title = `${formattedDate} | ${getTranslation('snapshot-title')}`;
-                
-                // Update other translated elements
-                document.getElementById('snapshot-for-text').textContent = getTranslation('snapshot-for');
-                document.getElementById('back-to-history-link').textContent = getTranslation('back-to-history');
-            }, 100);
-        });
-    }
 });
 
 function showTab(tabName) {
@@ -64,7 +44,7 @@ function showTab(tabName) {
 function loadSnapshotRankings(gender, date) {
     const lang = getCurrentLanguage(); // Get current language
     const loader = document.getElementById(`${gender}-loader`);
-    
+
     // Show loader
     if (loader) {
         loader.style.display = 'block';
@@ -156,12 +136,12 @@ function formatDate(dateStr) {
 function showError(message) {
     // Display error message
     document.getElementById('selected-date').textContent = message;
-    
+
     // Hide loaders
     document.querySelectorAll('.loader').forEach(loader => {
         loader.style.display = 'none';
     });
-    
+
     // Show error in tables
     document.querySelectorAll('tbody').forEach(tbody => {
         tbody.innerHTML = `<tr><td colspan="6" class="loading">${message}</td></tr>`;

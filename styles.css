@@ -647,3 +647,84 @@ nav a:hover {
         font-size: 0.8rem;
     }
 }
+
+/* Scroll buttons styles */
+.scroll-buttons-container {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    /* Position at middle-right */
+    transform: translateY(-50%);
+    /* Center vertically */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+
+.scroll-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(100, 100, 100, 0.7);
+    /* More gray-ish color with transparency */
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s, background-color 0.3s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom arrow icons with just the arrowhead */
+.scroll-top-button::before {
+    content: '▲';
+    /* Triangle up arrowhead */
+    font-size: 14px;
+}
+
+.scroll-bottom-button::before {
+    content: '▼';
+    /* Triangle down arrowhead */
+    font-size: 14px;
+}
+
+.scroll-button:hover {
+    background-color: rgba(80, 80, 80, 0.9);
+}
+
+.scroll-button.visible {
+    opacity: 0.8;
+}
+
+.scroll-button.visible:hover {
+    opacity: 1;
+}
+
+/* Responsive styles for smaller screens */
+@media (max-width: 768px) {
+    .scroll-buttons-container {
+        right: 15px;
+    }
+
+    .scroll-button {
+        width: 35px;
+        height: 35px;
+    }
+
+    .scroll-top-button::before,
+    .scroll-bottom-button::before {
+        font-size: 12px;
+    }
+}
+
+/* Adjust position for very small screens */
+@media (max-width: 480px) {
+    .scroll-buttons-container {
+        right: 10px;
+    }
+}

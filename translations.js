@@ -97,6 +97,9 @@ const translations = {
         'women-singles-snapshot': 'Women\'s Singles Snapshot',
         'realtime-rankings': 'Current Rankings',
         'historical-rankings': 'Historical Rankings',
+
+        'scroll-to-top': 'Scroll to top',
+        'scroll-to-bottom': 'Scroll to bottom',
     },
     zh: {
         // Page titles
@@ -152,7 +155,7 @@ const translations = {
         'birth-year': '出生年份',
 
         // Error messages
-        'no-player-id': '未提供球员ID',
+        'no-player-id': '未提供球员编号',
         'failed-load': '加载球员数据失败',
         'error-loading': '加载球员数据时出错。请稍后再试。',
         'no-data': '无可用数据',
@@ -168,10 +171,10 @@ const translations = {
 
         // Historical rankings
         'history-title': '历史排名 | 乒乓球WHR',
-        'snapshot-title': '历史快照 | 乒乓球WHR',
+        'snapshot-title': '历史排名快照 | 乒乓球WHR',
         'men-singles-history': '男子单打历史排名',
         'women-singles-history': '女子单打历史排名',
-        'eval-date': '评估日期',
+        'eval-date': '日期',
         'rank-1': '第1名',
         'rank-2': '第2名',
         'rank-3': '第3名',
@@ -185,7 +188,7 @@ const translations = {
         'loading-history': '正在加载历史排名...',
         'error-loading-history': '加载历史排名时出错。请稍后再试。',
         'no-history-data': '无可用历史排名数据。',
-        'snapshot-for': '排名快照：',
+        'snapshot-for': '历史排名快照：',
         'back-to-history': '返回历史排名',
         'loading-snapshot': '正在加载快照数据...',
         'error-loading-snapshot': '加载快照时出错。请稍后再试。',
@@ -195,6 +198,9 @@ const translations = {
         'women-singles-snapshot': '女子单打快照',
         'realtime-rankings': '当前排名',
         'historical-rankings': '历史排名',
+
+        'scroll-to-top': '返回顶部',
+        'scroll-to-bottom': '前往底部',
     }
 };
 
@@ -202,7 +208,6 @@ const translations = {
 function getCurrentLanguage() {
     return localStorage.getItem('language') || 'zh';
 }
-
 // Function to set the language in localStorage
 function setLanguage(lang) {
     localStorage.setItem('language', lang);
@@ -212,26 +217,99 @@ function setLanguage(lang) {
     updateResponsiveTableHeaders();
 
     // Update page title
-    if (window.location.pathname.includes('player.html')) {
-        // For player page, we need to preserve player name but translate the rest
+    updatePageTitle(lang);
+
+    // Update content based on page type
+    const path = window.location.pathname;
+
+    // For index page (current rankings)
+    if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
+        // Reload rankings
+        if (typeof loadRankings === 'function') {
+            loadRankings('men');
+            loadRankings('women');
+        }
+
+        // Refresh update times
+        if (typeof fetchUpdateTimes === 'function') {
+            fetchUpdateTimes();
+        }
+
+        // Update column toggle
+        setTimeout(function () {
+            if (typeof addColumnToggle === 'function') {
+                addColumnToggle();
+            }
+        }, 500);
+    }
+    // For player page
+    else if (path.includes('player.html')) {
+        // Get player ID and reload data
+        const urlParams = new URLSearchParams(window.location.search);
+        const playerId = urlParams.get('id');
+        if (playerId && typeof fetchPlayerData === 'function') {
+            fetchPlayerData(playerId);
+        }
+    }
+    // For history page
+    else if (path.includes('history.html')) {
+        // Reload historical rankings
+        if (typeof loadHistoricalRankings === 'function') {
+            loadHistoricalRankings('men');
+            loadHistoricalRankings('women');
+        }
+    }
+    // For snapshot page
+    else if (path.includes('snapshot.html')) {
+        // Get date and gender parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const date = urlParams.get('date');
+
+        // Reload snapshot data
+        if (date && typeof loadSnapshotRankings === 'function') {
+            loadSnapshotRankings('men', date);
+            loadSnapshotRankings('women', date);
+        }
+    }
+}
+
+// Function to update page title based on current page
+function updatePageTitle(lang) {
+    const path = window.location.pathname;
+
+    // For player page, preserve player name in title
+    if (path.includes('player.html')) {
         const playerNameElement = document.getElementById('player-name');
         let playerName = playerNameElement ? playerNameElement.textContent : '';
 
-        // If we're switching to Chinese and there's a Chinese name available, use it
-        if (lang === 'zh') {
-            const urlParams = new URLSearchParams(window.location.search);
-            const playerId = urlParams.get('id');
-            if (playerId) {
-                // We'll update the player name when the data is fetched
-                // The title will be updated in the fetchPlayerData function
-                return; // Return early as the title will be updated by fetchPlayerData
-            }
+        // If we're switching to Chinese and there's a Chinese name available, 
+        // it will be updated by fetchPlayerData
+        document.title = `${playerName} | ${getTranslation('player-title')}`;
+    }
+    // For main page (current rankings)
+    else if (path.includes('index.html') || path === '/' || path.endsWith('/')) {
+        document.title = getTranslation('main-title');
+    }
+    // For history page 
+    else if (path.includes('history.html')) {
+        document.title = getTranslation('history-title');
+    }
+    // For snapshot page
+    else if (path.includes('snapshot.html')) {
+        const selectedDateElement = document.getElementById('selected-date');
+        const dateStr = selectedDateElement ? selectedDateElement.textContent : '';
+        document.title = `${dateStr} | ${getTranslation('snapshot-title')}`;
+
+        // Also update other text elements
+        const snapshotForElement = document.getElementById('snapshot-for-text');
+        if (snapshotForElement) {
+            snapshotForElement.textContent = getTranslation('snapshot-for');
         }
 
-        document.title = `${playerName} | ${getTranslation('player-title')}`;
-    } else {
-        // For main page
-        document.title = getTranslation('main-title');
+        const backToHistoryLink = document.getElementById('back-to-history-link');
+        if (backToHistoryLink) {
+            backToHistoryLink.textContent = getTranslation('back-to-history');
+        }
     }
 }
 
@@ -245,36 +323,6 @@ function toggleLanguage() {
     const languageSwitcher = document.getElementById('language-switcher');
     if (languageSwitcher) {
         languageSwitcher.textContent = getTranslation('switch-language');
-    }
-
-    // Reload rankings if on main page
-    if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
-        loadRankings('men');
-        loadRankings('women');
-        fetchUpdateTimes();
-        setTimeout(addColumnToggle, 500);
-        // Update the main page title
-        document.title = getTranslation('main-title');
-        // Update responsive table headers
-        updateResponsiveTableHeaders();
-    }
-
-    // Reload player data if on player page
-    if (window.location.pathname.includes('player.html')) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const playerId = urlParams.get('id');
-        if (playerId) {
-            // Add a small delay to ensure any pending operations are completed
-            setTimeout(() => {
-                fetchPlayerData(playerId);
-                // The title will be updated in fetchPlayerData
-            }, 50);
-        } else {
-            // If no player ID for some reason, just update with generic title
-            document.title = getTranslation('player-title');
-        }
-        // Update responsive table headers
-        updateResponsiveTableHeaders();
     }
 }
 

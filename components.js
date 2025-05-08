@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', function () {
             // Continue with page-specific initialization
             initializePage();
 
+            // Add scroll buttons
+            addScrollButtons();
+
             // After footer loads, apply translations
             applyTranslations();
         });
@@ -179,4 +182,57 @@ function highlightCurrentPage() {
         }
         // For player page - don't highlight any nav item
     });
+}
+
+// Function to add scroll to top/bottom buttons
+function addScrollButtons() {
+    // Create container for scroll buttons
+    const scrollButtonsContainer = document.createElement('div');
+    scrollButtonsContainer.className = 'scroll-buttons-container';
+
+    // Create scroll to top button
+    const scrollTopButton = document.createElement('button');
+    scrollTopButton.className = 'scroll-button scroll-top-button';
+    scrollTopButton.title = getTranslation('scroll-to-top') || 'Scroll to top';
+    // Empty button - icon is created with CSS
+    scrollTopButton.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Create scroll to bottom button
+    const scrollBottomButton = document.createElement('button');
+    scrollBottomButton.className = 'scroll-button scroll-bottom-button';
+    scrollBottomButton.title = getTranslation('scroll-to-bottom') || 'Scroll to bottom';
+    // Empty button - icon is created with CSS
+    scrollBottomButton.addEventListener('click', function () {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+
+    // Add buttons to container
+    scrollButtonsContainer.appendChild(scrollTopButton);
+    scrollButtonsContainer.appendChild(scrollBottomButton);
+
+    // Add container to body
+    document.body.appendChild(scrollButtonsContainer);
+
+    // Show/hide buttons based on scroll position
+    window.addEventListener('scroll', function () {
+        // Show scroll to top button when scrolled down
+        if (window.scrollY > 300) {
+            scrollTopButton.classList.add('visible');
+        } else {
+            scrollTopButton.classList.remove('visible');
+        }
+
+        // Show scroll to bottom button when not at the bottom
+        const scrolledToBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 300;
+        if (!scrolledToBottom) {
+            scrollBottomButton.classList.add('visible');
+        } else {
+            scrollBottomButton.classList.remove('visible');
+        }
+    });
+
+    // Trigger scroll event to set initial button visibility
+    window.dispatchEvent(new Event('scroll'));
 }
