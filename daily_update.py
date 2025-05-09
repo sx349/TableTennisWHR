@@ -400,7 +400,7 @@ def hist_rankings(ratings, eval_date, w2):
     today = (eval_date - pd.to_datetime(MIN_DATE)).days
     one_year = today - 365
 
-    latest = ratings[ratings["date"] > one_year]
+    latest = ratings[(ratings["date"] <= today) & (ratings["date"] >= one_year)]
     latest = latest.sort_values("date").groupby("name").last().reset_index()
     latest["name"] = latest["name"].astype(int)
     latest = latest.rename(columns={"name": "id"})
@@ -411,10 +411,63 @@ def hist_rankings(ratings, eval_date, w2):
     rank["rank"] = rank.index + 1
     rank["eval_date"] = date_str
     rank["days_since"] = today - rank["date"]
-    rank["new_error"] = (rank["error"] ** 2 + w2 * rank["days_since"]) ** 0.5
-    rank = rank[["eval_date", "rank", "id", "rating", "new_error"]]
-    rank.columns = ["eval_date", "rank", "id", "rating", "error"]
+    rank["error"] = (rank["error"] ** 2 + w2 * rank["days_since"]) ** 0.5
+    rank = rank[["eval_date", "rank", "id", "rating", "error"]]
     return rank
+
+
+def men_hist_ranking(last_info):
+    conn = sqlite3.connect("DATA.DB")
+    men_ratings = pd.read_sql_query("SELECT * FROM men_ratings", conn)
+    conn.close()
+
+    TODAY = datetime.datetime.now()
+    dates = pd.date_range(
+        start="2004-01-01", end=TODAY.strftime("%Y-%m-%d"), freq="W-SUN"
+    )
+    if TODAY.weekday() <= 1:
+        dates = dates[:-1]
+    men_hist_rank = []
+    for eval_date in dates:
+        men_hist_rank.append(hist_rankings(men_ratings, eval_date, MEN_W2))
+    men_hist_rank = pd.concat(men_hist_rank).reset_index(drop=True)
+
+    conn = sqlite3.connect("DATA.DB")
+    men_hist_rank.to_sql("men_hist_rank", conn, if_exists="replace", index=False)
+    conn.close()
+
+    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("LAST_INFO.JSON", "w") as file:
+        json.dump(last_info, file)
+
+    return None
+
+
+def women_hist_ranking(last_info):
+    conn = sqlite3.connect("DATA.DB")
+    women_ratings = pd.read_sql_query("SELECT * FROM women_ratings", conn)
+    conn.close()
+
+    TODAY = datetime.datetime.now()
+    dates = pd.date_range(
+        start="2004-01-01", end=TODAY.strftime("%Y-%m-%d"), freq="W-SUN"
+    )
+    if TODAY.weekday() <= 1:
+        dates = dates[:-1]
+    women_hist_rank = []
+    for eval_date in dates:
+        women_hist_rank.append(hist_rankings(women_ratings, eval_date, WOMEN_W2))
+    women_hist_rank = pd.concat(women_hist_rank).reset_index(drop=True)
+
+    conn = sqlite3.connect("DATA.DB")
+    women_hist_rank.to_sql("women_hist_rank", conn, if_exists="replace", index=False)
+    conn.close()
+
+    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("LAST_INFO.JSON", "w") as file:
+        json.dump(last_info, file)
+
+    return None
 
 
 def daily_update():
@@ -448,59 +501,8 @@ def daily_update():
         men_single_ranking(last_info, all_players)
         women_single_ranking(last_info, all_players)
 
-        conn = sqlite3.connect("DATA.DB")
-        cursor = conn.cursor()
-        cursor.execute("SELECT MAX(eval_date) FROM men_hist_rank")
-        LAST_EVAL = pd.to_datetime(cursor.fetchone()[0])
-        conn.close()
-
-        TODAY = datetime.datetime.now()
-        LAST_SUN = TODAY - datetime.timedelta(days=TODAY.weekday() + 1)
-        if TODAY.weekday() >= 2 and LAST_EVAL < LAST_SUN:
-            eval_dates = pd.date_range(
-                LAST_EVAL + datetime.timedelta(days=1), LAST_SUN, freq="W-SUN"
-            )
-
-            for eval_date in eval_dates:
-                date_str = eval_date.strftime("%Y-%m-%d")
-
-                conn = sqlite3.connect("DATA.DB")
-                query = f"""
-                SELECT * FROM matches 
-                WHERE gender_a = 'M' AND gender_x = 'M' 
-                AND player_b IS NULL AND player_y IS NULL
-                AND player_a != player_x AND end_date <= '{date_str}'
-                """
-                men_matches = pd.read_sql_query(query, conn)
-                conn.close()
-
-                men_ratings = whr_calc(men_matches, MEN_W2)
-                men_rankings = hist_rankings(men_ratings, eval_date, MEN_W2)
-
-                conn = sqlite3.connect("DATA.DB")
-                men_rankings.to_sql(
-                    "men_hist_rank", conn, if_exists="append", index=False
-                )
-                conn.close()
-
-                conn = sqlite3.connect("DATA.DB")
-                query = f"""
-                SELECT * FROM matches 
-                WHERE gender_a = 'W' AND gender_x = 'W' 
-                AND player_b IS NULL AND player_y IS NULL
-                AND player_a != player_x AND end_date <= '{date_str}'
-                """
-                women_matches = pd.read_sql_query(query, conn)
-                conn.close()
-
-                women_ratings = whr_calc(women_matches, WOMEN_W2)
-                women_rankings = hist_rankings(women_ratings, eval_date, WOMEN_W2)
-
-                conn = sqlite3.connect("DATA.DB")
-                women_rankings.to_sql(
-                    "women_hist_rank", conn, if_exists="append", index=False
-                )
-                conn.close()
+        men_hist_ranking(last_info)
+        women_hist_ranking(last_info)
 
         return True
     except Exception as e:
