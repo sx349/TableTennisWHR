@@ -187,14 +187,9 @@ nav {
 nav a {
     color: white;
     text-decoration: none;
-    background-color: #333;
     padding: 5px 15px;
     border-radius: 3px;
     transition: background-color 0.3s;
-}
-
-nav a:hover {
-    background-color: #555;
 }
 
 .player-container {
@@ -426,7 +421,7 @@ nav a:hover {
     }
 }
 
-/* Navigation bar in header */
+/* Navigation bar in header - UPDATED */
 .main-nav {
     margin: 0.5rem 0;
 }
@@ -440,19 +435,50 @@ nav a:hover {
 }
 
 .main-nav ul li {
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Add separator between nav items */
+.main-nav ul li:not(:last-child):after {
+    content: "|";
     margin: 0 1rem;
+    color: #aaa;
 }
 
 .main-nav ul li a {
     color: white;
     text-decoration: none;
     padding: 5px 10px;
-    border-radius: 3px;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
 }
 
 .main-nav ul li a:hover {
-    background-color: #333;
+    color: #99ccff;
+}
+
+/* Active navigation link style - bold and underlined but not italic */
+.active-nav {
+    font-weight: bold !important;
+    text-decoration: underline !important;
+}
+
+/* Responsive styles for the navigation */
+@media (max-width: 768px) {
+    .main-nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .main-nav ul li {
+        margin: 0.25rem 0;
+    }
+
+    /* Remove separator for vertical layout */
+    .main-nav ul li:not(:last-child):after {
+        content: none;
+    }
 }
 
 /* History table styles */
@@ -604,7 +630,6 @@ nav a:hover {
 
 /* Active navigation link style */
 .active-nav {
-    background-color: #333 !important;
     font-weight: bold;
 }
 
