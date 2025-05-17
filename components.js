@@ -215,24 +215,46 @@ function addScrollButtons() {
     // Add container to body
     document.body.appendChild(scrollButtonsContainer);
 
-    // Show/hide buttons based on scroll position
-    window.addEventListener('scroll', function () {
-        // Show scroll to top button when scrolled down
-        if (window.scrollY > 300) {
+    // Function to update button visibility that handles edge cases better
+    function updateButtonVisibility() {
+        // Get accurate measurements
+        const windowHeight = window.innerHeight;
+        const scrollY = window.scrollY;
+        const documentHeight = Math.max(
+            document.body.scrollHeight,
+            document.body.offsetHeight,
+            document.documentElement.clientHeight,
+            document.documentElement.scrollHeight,
+            document.documentElement.offsetHeight
+        );
+
+        // Content below viewport (amount of scrollable content remaining)
+        const contentBelowViewport = documentHeight - (windowHeight + scrollY);
+
+        // Show scroll to top button when scrolled down at least 300px
+        if (scrollY > 300) {
             scrollTopButton.classList.add('visible');
         } else {
             scrollTopButton.classList.remove('visible');
         }
 
-        // Show scroll to bottom button when not at the bottom
-        const scrolledToBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 300;
-        if (!scrolledToBottom) {
+        // Always show bottom button if there's at least 100px of content to scroll to
+        if (contentBelowViewport > 100) {
             scrollBottomButton.classList.add('visible');
         } else {
             scrollBottomButton.classList.remove('visible');
         }
-    });
+    }
 
-    // Trigger scroll event to set initial button visibility
-    window.dispatchEvent(new Event('scroll'));
+    // Update button visibility on scroll
+    window.addEventListener('scroll', updateButtonVisibility);
+
+    // Update button visibility on resize
+    window.addEventListener('resize', updateButtonVisibility);
+
+    // Initial update with a delay to ensure DOM is fully rendered
+    setTimeout(updateButtonVisibility, 500);
+
+    // Also update when images or other resources finish loading
+    window.addEventListener('load', updateButtonVisibility);
 }
