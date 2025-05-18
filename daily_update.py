@@ -396,24 +396,48 @@ def women_single_ranking(last_info, all_players):
 
 
 def hist_rankings(ratings, eval_date, w2):
-    date_str = eval_date.strftime("%Y-%m-%d")
     today = (eval_date - pd.to_datetime(MIN_DATE)).days
     one_year = today - 365
-
-    latest = ratings[(ratings["date"] <= today) & (ratings["date"] >= one_year)]
-    latest = latest.sort_values("date").groupby("name").last().reset_index()
+    latest = (
+        ratings[(ratings["date"] > one_year) & (ratings["date"] <= today)]
+        .groupby("name")
+        .last()
+        .reset_index()
+    )
+    future = ratings[ratings["date"] > today].groupby("name").first().reset_index()
+    latest = latest.merge(
+        future[["name", "date", "rating", "error"]],
+        on="name",
+        how="left",
+        suffixes=["_old", "_new"],
+    )
+    latest["t1"] = today - latest["date_old"]
+    latest["t2"] = latest["date_new"] - today
+    latest["t"] = latest["date_new"] - latest["date_old"]
+    latest["rating"] = (
+        latest["t1"] * latest["rating_new"] + latest["t2"] * latest["rating_old"]
+    ) / latest["t"]
+    latest["error"] = (
+        w2 * latest["t1"] * latest["t2"] / latest["t"]
+        + (
+            (latest["t1"] * latest["error_new"] + latest["t2"] * latest["error_old"])
+            / latest["t"]
+        )
+        ** 2
+    ) ** 0.5
+    latest.fillna({"rating": latest["rating_old"]}, inplace=True)
+    latest.fillna(
+        {"error": (latest["error_old"] ** 2 + w2 * latest["t1"]) ** 0.5}, inplace=True
+    )
     latest["name"] = latest["name"].astype(int)
     latest = latest.rename(columns={"name": "id"})
     latest = (
-        latest.sort_values("rating", ascending=False).reset_index(drop=True).iloc[:100]
+        latest.sort_values("rating", ascending=False).iloc[:100].reset_index(drop=True)
     )
-    rank = latest
-    rank["rank"] = rank.index + 1
-    rank["eval_date"] = date_str
-    rank["days_since"] = today - rank["date"]
-    rank["error"] = (rank["error"] ** 2 + w2 * rank["days_since"]) ** 0.5
-    rank = rank[["eval_date", "rank", "id", "rating", "error"]]
-    return rank
+    latest["rank"] = latest.index + 1
+    latest["eval_date"] = eval_date.strftime("%Y-%m-%d")
+    latest = latest[["eval_date", "rank", "id", "rating", "error"]]
+    return latest
 
 
 def men_hist_ranking(last_info):
@@ -425,6 +449,7 @@ def men_hist_ranking(last_info):
     dates = pd.date_range(
         start="2004-01-01", end=TODAY.strftime("%Y-%m-%d"), freq="W-SUN"
     )
+    men_ratings = men_ratings.sort_values("date")
     if TODAY.weekday() <= 1:
         dates = dates[:-1]
     men_hist_rank = []
@@ -440,6 +465,10 @@ def men_hist_ranking(last_info):
     with open("LAST_INFO.JSON", "w") as file:
         json.dump(last_info, file)
 
+    top_10_men = list(men_hist_rank[men_hist_rank["rank"] <= 10]["id"].unique())
+    with open("TOP_10_MEN.JSON", "w") as file:
+        json.dump(top_10_men, file)
+
     return None
 
 
@@ -452,6 +481,7 @@ def women_hist_ranking(last_info):
     dates = pd.date_range(
         start="2004-01-01", end=TODAY.strftime("%Y-%m-%d"), freq="W-SUN"
     )
+    women_ratings = women_ratings.sort_values("date")
     if TODAY.weekday() <= 1:
         dates = dates[:-1]
     women_hist_rank = []
@@ -466,6 +496,10 @@ def women_hist_ranking(last_info):
     last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open("LAST_INFO.JSON", "w") as file:
         json.dump(last_info, file)
+
+    top_10_women = list(women_hist_rank[women_hist_rank["rank"] <= 10]["id"].unique())
+    with open("TOP_10_WOMEN.JSON", "w") as file:
+        json.dump(top_10_women, file)
 
     return None
 
