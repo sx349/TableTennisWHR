@@ -133,6 +133,13 @@ function initializePage() {
     else if (window.location.pathname.includes('snapshot.html')) {
         // Snapshot page initialization handled by snapshot.js
     }
+    // For top_players page
+    else if (window.location.pathname.includes('top_players.html')) {
+        // Top players page initialization handled by top_players.js
+        if (typeof checkScreenSize === 'function') {
+            setTimeout(checkScreenSize, 100);
+        }
+    }
     // You can add initialization for other pages here
 }
 
@@ -178,6 +185,10 @@ function highlightCurrentPage() {
         }
         // For snapshot page - consider it part of history
         else if (path.includes('snapshot.html') && href.includes('history.html')) {
+            link.classList.add('active-nav');
+        }
+        // For top_players page
+        else if (path.includes('top_players.html') && href.includes('top_players.html')) {
             link.classList.add('active-nav');
         }
         // For player page - don't highlight any nav item

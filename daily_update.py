@@ -465,7 +465,9 @@ def men_hist_ranking(last_info):
     with open("LAST_INFO.JSON", "w") as file:
         json.dump(last_info, file)
 
-    top_10_men = list(men_hist_rank[men_hist_rank["rank"] <= 10]["id"].unique())
+    top_10_men = [
+        int(x) for x in men_hist_rank[men_hist_rank["rank"] <= 10]["id"].unique()
+    ]
     with open("TOP_10_MEN.JSON", "w") as file:
         json.dump(top_10_men, file)
 
@@ -497,7 +499,9 @@ def women_hist_ranking(last_info):
     with open("LAST_INFO.JSON", "w") as file:
         json.dump(last_info, file)
 
-    top_10_women = list(women_hist_rank[women_hist_rank["rank"] <= 10]["id"].unique())
+    top_10_women = [
+        int(x) for x in women_hist_rank[women_hist_rank["rank"] <= 10]["id"].unique()
+    ]
     with open("TOP_10_WOMEN.JSON", "w") as file:
         json.dump(top_10_women, file)
 

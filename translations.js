@@ -100,6 +100,26 @@ const translations = {
 
         'scroll-to-top': 'Scroll to top',
         'scroll-to-bottom': 'Scroll to bottom',
+
+        // Page titles
+        'top-players-title': 'Top Players Chart | Table Tennis WHR',
+
+        // Navigation
+        'top-players-nav': 'Top Players',
+
+        // Chart elements
+        'rotate-device': 'Please rotate your device or use a larger screen for better chart viewing.',
+        'loading-chart': 'Loading chart data...',
+        'player-info': 'Player Information',
+        'player-name': 'Name',
+        'player-date': 'Date',
+        'player-rating': 'Rating',
+        'chart-legend': 'Chart Legend',
+        'no-data': 'No data available for display.',
+        'retired': 'Removed from Ranking',
+        'active-prediction': 'Predicted',
+        'mens-top-players': 'Men\'s Single Top Players',
+        'womens-top-players': 'Women\'s Single Top Players',
     },
     zh: {
         // Page titles
@@ -126,7 +146,7 @@ const translations = {
 
         // Player page
         'back-to-rankings': '返回排名',
-        'loading-player': '正在加载球员数据...',
+        'loading-player': '正在加载选手数据...',
         'id': 'ITTF编号：',
         'yob': '出生年份：',
         'assoc': '协会：',
@@ -155,9 +175,9 @@ const translations = {
         'birth-year': '出生年份',
 
         // Error messages
-        'no-player-id': '未提供球员编号',
-        'failed-load': '加载球员数据失败',
-        'error-loading': '加载球员数据时出错。请稍后再试。',
+        'no-player-id': '未提供选手编号',
+        'failed-load': '加载选手数据失败',
+        'error-loading': '加载选手数据时出错。请稍后再试。',
         'no-data': '无可用数据',
         'no-ranking-data': '无可用排名数据。',
         'loading': '加载中...',
@@ -201,6 +221,26 @@ const translations = {
 
         'scroll-to-top': '返回顶部',
         'scroll-to-bottom': '前往底部',
+
+        // Page titles
+        'top-players-title': '顶尖选手 | 乒乓球WHR',
+
+        // Navigation
+        'top-players-nav': '顶尖选手',
+
+        // Chart elements
+        'rotate-device': '请旋转设备或使用更大的屏幕以获得更好的图表展示。',
+        'loading-chart': '正在加载图表数据...',
+        'player-info': '选手信息',
+        'player-name': '姓名',
+        'player-date': '日期',
+        'player-rating': '等级分',
+        'chart-legend': '图表图例',
+        'no-data': '没有可显示的数据。',
+        'retired': '不再记入排名',
+        'active-prediction': '预测',
+        'mens-top-players': '男子单打顶尖选手',
+        'womens-top-players': '女子单打顶尖选手'
     }
 };
 
@@ -212,6 +252,12 @@ function getCurrentLanguage() {
 function setLanguage(lang) {
     localStorage.setItem('language', lang);
     applyTranslations();
+
+    // Dispatch a custom event to notify other scripts that the language has changed
+    const languageChangedEvent = new CustomEvent('languageChanged', {
+        detail: { language: lang }
+    });
+    document.dispatchEvent(languageChangedEvent);
 
     // Update responsive table headers
     updateResponsiveTableHeaders();

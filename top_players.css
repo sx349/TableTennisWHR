@@ -1,0 +1,159 @@
+/* Chart and legend styles */
+.chart-container {
+    width: 100%;
+    margin: 20px 0;
+    padding: 10px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: visible;
+    position: relative;
+}
+
+/* Men's chart container (5 legend rows) */
+#men .chart-container {
+    height: 900px;
+}
+
+/* Women's chart container (6 legend rows) */
+#women .chart-container {
+    height: 940px;
+}
+
+/* Chart SVG container */
+.chart-svg-container {
+    width: 100%;
+    height: 650px;
+    margin-top: 20px;
+}
+
+/* Legend grid layout (7 columns) */
+.chart-legend {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-gap: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Add this to ensure the title row spans all columns */
+.legend-title-row {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+/* Legend title spans all columns */
+.legend-title {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Legend item styles */
+.legend-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 3px;
+}
+
+.legend-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.legend-item.inactive {
+    opacity: 0.5;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    margin-right: 5px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.legend-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+/* Loading message */
+.loading-message {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1rem;
+    color: #555;
+}
+
+/* Device rotation message */
+.rotate-device-message {
+    display: none;
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1rem;
+    color: #555;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    margin: 20px auto;
+    max-width: 400px;
+}
+
+/* Custom tooltip styles - these may get overridden by NVD3 */
+.nvtooltip {
+    padding: 8px !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Responsive styles */
+@media (max-width: 767px) {
+    .chart-container {
+        display: none;
+    }
+
+    .rotate-device-message {
+        display: block;
+    }
+}
+
+@media (orientation: landscape) and (min-width: 568px) {
+    .chart-container {
+        display: block;
+    }
+
+    .rotate-device-message {
+        display: none;
+    }
+}
+
+.nvd3.nv-line .nvd3.nv-scatter .nv-groups .nv-point {
+    stroke-width: 0px !important;
+    fill-opacity: 1 !important;
+}
+
+.nvd3.nv-line .nvd3.nv-scatter .nv-groups .nv-point.hover {
+    stroke-width: 2px !important;
+}
+
+.nvtooltip h3 {
+    background-color: rgba(255, 255, 255, 1) !important;
+    border-bottom: 0px !important;
+    border-radius: 0 0 0 0 !important;
+}
+
+.nvtooltip.inactive-series-tooltip {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
