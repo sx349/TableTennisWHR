@@ -30,7 +30,7 @@ function loadHistoricalRankings(gender) {
         loader.style.display = 'block';
     }
 
-    fetch(`history_data.php?gender=${gender}&lang=${lang}`)
+    fetch(`${gender}_history.json`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(getTranslation('network-error'));

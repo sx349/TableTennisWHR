@@ -88,17 +88,7 @@ function loadTopPlayersData(gender) {
     tabContent.appendChild(chartContainer);
 
     // Fetch player IDs from the JSON file
-    fetch(`TOP_10_${gender.toUpperCase()}.JSON`)
-        .then(response => response.json())
-        .then(playerIds => {
-            if (!playerIds || playerIds.length === 0) {
-                throw new Error('No player IDs found');
-            }
-
-            // Get player data from the PHP script
-            const lang = getCurrentLanguage();
-            return fetch(`top_players_data.php?gender=${gender}&ids=${playerIds.join(',')}&lang=${lang}`);
-        })
+    fetch(`${gender}_top_players.json`)
         .then(response => response.json())
         .then(data => {
             if (!data || data.error) {

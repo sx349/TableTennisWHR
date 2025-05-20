@@ -30,7 +30,7 @@ logging.basicConfig(
 
 def init_session():
 
-    with open("LAST_INFO.JSON", "r") as file:
+    with open("last_info.json", "r") as file:
         last_info = json.load(file)
     last_info
 
@@ -92,7 +92,7 @@ def get_new_events(session, last_info):
         last_event = new_events.iloc[0, 0]
         last_info["event"] = int(last_event)
         last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open("LAST_INFO.JSON", "w") as file:
+        with open("last_info.json", "w") as file:
             json.dump(last_info, file)
         conn = sqlite3.connect("DATA.DB")
         new_events[["tournament", "end_date"]].to_sql(
@@ -149,7 +149,7 @@ def get_new_matches_raw(session, last_info, new_events):
 
     if not new_matches_raw.empty:
         last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open("LAST_INFO.JSON", "w") as file:
+        with open("last_info.json", "w") as file:
             json.dump(last_info, file)
 
     return new_matches_raw
@@ -203,7 +203,7 @@ def get_new_players(session, last_info, new_matches_raw):
         new_players = new_players.drop(columns="profile")
 
         last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open("LAST_INFO.JSON", "w") as file:
+        with open("last_info.json", "w") as file:
             json.dump(last_info, file)
         conn = sqlite3.connect("DATA.DB")
         new_players.to_sql("players", conn, if_exists="append", index=False)
@@ -231,7 +231,7 @@ def process_new_matches(last_info, all_players, new_matches_raw, new_events):
 
     if not new_matches.empty:
         last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open("LAST_INFO.JSON", "w") as file:
+        with open("last_info.json", "w") as file:
             json.dump(last_info, file)
         conn = sqlite3.connect("DATA.DB")
         new_matches.to_sql("matches", conn, if_exists="append", index=False)
@@ -322,7 +322,7 @@ def men_single_rating(last_info):
     men_ratings = whr_calc(men_matches, MEN_W2)
 
     last_info["rating_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("LAST_INFO.JSON", "w") as file:
+    with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
     conn = sqlite3.connect("DATA.DB")
@@ -344,7 +344,7 @@ def men_single_ranking(last_info, all_players, men_ittf):
     men_ranking = rankings(men_ratings, men_ittf, all_players, MEN_W2, today)
 
     last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("LAST_INFO.JSON", "w") as file:
+    with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
     with open("men_ranking.json", "w") as file:
@@ -368,7 +368,7 @@ def women_single_rating(last_info):
     women_ratings = whr_calc(women_matches, WOMEN_W2)
 
     last_info["rating_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("LAST_INFO.JSON", "w") as file:
+    with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
     conn = sqlite3.connect("DATA.DB")
@@ -390,7 +390,7 @@ def women_single_ranking(last_info, all_players, women_ittf):
     women_ranking = rankings(women_ratings, women_ittf, all_players, WOMEN_W2, today)
 
     last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("LAST_INFO.JSON", "w") as file:
+    with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
     with open("women_ranking.json", "w") as file:
@@ -469,7 +469,7 @@ def hist_rankings(ratings, eval_date, w2):
     return latest
 
 
-def men_hist_ranking(last_info):
+def men_hist_ranking(last_info, all_players):
     conn = sqlite3.connect("DATA.DB")
     men_ratings = pd.read_sql_query("SELECT * FROM men_ratings", conn)
     conn.close()
@@ -490,20 +490,64 @@ def men_hist_ranking(last_info):
     men_hist_rank.to_sql("men_hist_rank", conn, if_exists="replace", index=False)
     conn.close()
 
-    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("LAST_INFO.JSON", "w") as file:
-        json.dump(last_info, file)
+    men_hist_all = men_hist_rank[men_hist_rank["rank"] <= 5][
+        ["eval_date", "rank", "id", "rating"]
+    ].merge(all_players[["id", "name", "name_zh"]], on="id", how="left")
+
+    men_history = []
+    for i, row in men_hist_all.iterrows():
+        if i % 5 == 0:
+            date_entry = {"date": row["eval_date"], "players": []}
+        date_entry["players"].append(
+            {
+                "id": int(row["id"]),
+                "rank": int(row["rank"]),
+                "name": row["name"],
+                "name_zh": row["name_zh"],
+                "rating": float(row["rating"]),
+            }
+        )
+        if i % 5 == 4:
+            men_history.append(date_entry)
+
+    with open("men_history.json", "w") as file:
+        json.dump(men_history[::-1], file)
 
     top_10_men = [
         int(x) for x in men_hist_rank[men_hist_rank["rank"] <= 10]["id"].unique()
     ]
-    with open("TOP_10_MEN.JSON", "w") as file:
-        json.dump(top_10_men, file)
+    all_players = all_players.set_index("id")
+    top_players = []
+    conn = sqlite3.connect("DATA.DB")
+    for id in top_10_men:
+        demographics = all_players.loc[id]
+        ratings = pd.read_sql_query(
+            f"SELECT date, rating FROM men_ratings WHERE name={id} ORDER BY date", conn
+        )
+        player = {
+            "id": int(demographics.name),
+            "name": demographics["name"],
+            "name_zh": demographics["name_zh"],
+            "ratings": [],
+        }
+        for _, rating in ratings.iterrows():
+            player["ratings"].append(
+                {"date": int(rating.date), "rating": float(rating.rating)}
+            )
+        top_players.append(player)
+    conn.close()
+    all_players = all_players.reset_index()
+    with open("men_top_players.json", "w") as file:
+        json.dump({"players": top_players}, file)
+
+    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("last_info.json", "w") as file:
+        json.dump(last_info, file)
 
     return None
 
 
-def women_hist_ranking(last_info):
+def women_hist_ranking(last_info, all_players):
     conn = sqlite3.connect("DATA.DB")
     women_ratings = pd.read_sql_query("SELECT * FROM women_ratings", conn)
     conn.close()
@@ -524,15 +568,61 @@ def women_hist_ranking(last_info):
     women_hist_rank.to_sql("women_hist_rank", conn, if_exists="replace", index=False)
     conn.close()
 
-    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("LAST_INFO.JSON", "w") as file:
-        json.dump(last_info, file)
+    women_hist_all = women_hist_rank[women_hist_rank["rank"] <= 5][
+        ["eval_date", "rank", "id", "rating"]
+    ].merge(all_players[["id", "name", "name_zh"]], on="id", how="left")
+
+    women_history = []
+    for i, row in women_hist_all.iterrows():
+        if i % 5 == 0:
+            date_entry = {"date": row["eval_date"], "players": []}
+        date_entry["players"].append(
+            {
+                "id": int(row["id"]),
+                "rank": int(row["rank"]),
+                "name": row["name"],
+                "name_zh": row["name_zh"],
+                "rating": float(row["rating"]),
+            }
+        )
+        if i % 5 == 4:
+            women_history.append(date_entry)
+
+    with open("women_history.json", "w") as file:
+        json.dump(women_history[::-1], file)
 
     top_10_women = [
         int(x) for x in women_hist_rank[women_hist_rank["rank"] <= 10]["id"].unique()
     ]
-    with open("TOP_10_WOMEN.JSON", "w") as file:
-        json.dump(top_10_women, file)
+
+    all_players = all_players.set_index("id")
+    top_players = []
+    conn = sqlite3.connect("DATA.DB")
+    for id in top_10_women:
+        demographics = all_players.loc[id]
+        ratings = pd.read_sql_query(
+            f"SELECT date, rating FROM women_ratings WHERE name={id} ORDER BY date",
+            conn,
+        )
+        player = {
+            "id": int(demographics.name),
+            "name": demographics["name"],
+            "name_zh": demographics["name_zh"],
+            "ratings": [],
+        }
+        for _, rating in ratings.iterrows():
+            player["ratings"].append(
+                {"date": int(rating.date), "rating": float(rating.rating)}
+            )
+        top_players.append(player)
+    conn.close()
+    all_players = all_players.reset_index()
+    with open("women_top_players.json", "w") as file:
+        json.dump({"players": top_players}, file)
+
+    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("last_info.json", "w") as file:
+        json.dump(last_info, file)
 
     return None
 
@@ -573,8 +663,8 @@ def daily_update():
         men_single_ranking(last_info, all_players, men_ittf)
         women_single_ranking(last_info, all_players, women_ittf)
         stage = 8
-        men_hist_ranking(last_info)
-        women_hist_ranking(last_info)
+        men_hist_ranking(last_info, all_players)
+        women_hist_ranking(last_info, all_players)
 
         return True
     except Exception as e:

@@ -94,7 +94,7 @@ function displayRankings(rankings, gender) {
 }
 
 function fetchUpdateTimes() {
-    fetch('LAST_INFO.JSON')
+    fetch('last_info.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error(getTranslation('network-error'));
