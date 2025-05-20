@@ -42,18 +42,17 @@ function loadRankings(gender) {
         .catch(error => {
             console.error('Error loading rankings:', error);
             document.getElementById(`${gender}-rankings`).innerHTML =
-                `<tr><td colspan="6" class="loading">${getTranslation('error-loading-rankings')}</td></tr>`;
+                `<tr><td colspan="7" class="loading">${getTranslation('error-loading-rankings')}</td></tr>`;
         });
 }
 
 function displayRankings(rankings, gender) {
     const tableBody = document.getElementById(`${gender}-rankings`);
 
-    // Only display top 100 players
     const topPlayers = rankings.slice(0, 100);
 
     if (topPlayers.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="loading">${getTranslation('no-ranking-data')}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="loading">${getTranslation('no-ranking-data')}</td></tr>`;
         return;
     }
 
@@ -80,6 +79,7 @@ function displayRankings(rankings, gender) {
         html += `
             <tr>
                 <td data-label="${getTranslation('rank')}">${player.rank}</td>
+                <td data-label="${getTranslation('ittf-rank')}">${player.ittf_rank}</td>
                 <td data-label="${getTranslation('player')}"><a href="player.html?id=${player.id}" class="player-link">${displayName}</a></td>
                 <td data-label="${getTranslation('year-of-birth')}">${player.yob}</td>
                 <td data-label="${getTranslation('association')}">${displayAssociation}</td>
@@ -172,9 +172,10 @@ function addColumnToggle() {
     toggleContainer.innerHTML = `
         <p>${getTranslation('show-hide-columns')}</p>
         <div class="toggle-buttons">
-            <button data-column="3" class="toggle-button active">${getTranslation('birth-year')}</button>
-            <button data-column="4" class="toggle-button active">${getTranslation('association')}</button>
-            <button data-column="6" class="toggle-button active">${getTranslation('error')}</button>
+            <button data-column="2" class="toggle-button active">${getTranslation('ittf-rank')}</button>
+            <button data-column="4" class="toggle-button active">${getTranslation('birth-year')}</button>
+            <button data-column="5" class="toggle-button active">${getTranslation('association')}</button>
+            <button data-column="7" class="toggle-button active">${getTranslation('error')}</button>
         </div>
     `;
 
@@ -215,6 +216,7 @@ function addDataAttributesToTables() {
     const headers = {
         men: [
             getTranslation('rank'),
+            getTranslation('ittf-rank'),
             getTranslation('player'),
             getTranslation('year-of-birth'),
             getTranslation('association'),
@@ -223,6 +225,7 @@ function addDataAttributesToTables() {
         ],
         women: [
             getTranslation('rank'),
+            getTranslation('ittf-rank'),
             getTranslation('player'),
             getTranslation('year-of-birth'),
             getTranslation('association'),

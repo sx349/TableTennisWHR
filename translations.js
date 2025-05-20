@@ -16,6 +16,7 @@ const translations = {
 
         // Table headers
         'rank': 'Rank',
+        'ittf-rank': 'ITTF Rank',
         'player': 'Player',
         'year-of-birth': 'Year of Birth',
         'association': 'Association',
@@ -137,6 +138,7 @@ const translations = {
 
         // Table headers
         'rank': '排名',
+        'ittf-rank': 'ITTF排名',
         'player': '姓名',
         'year-of-birth': '出生年份',
         'association': '协会',
@@ -430,6 +432,7 @@ function updateResponsiveTableHeaders() {
 
     // Get translations for the headers
     const rankText = getTranslation('rank');
+    const ittfRankText = getTranslation('ittf-rank');
     const playerText = getTranslation('player');
     const birthYearText = getTranslation('year-of-birth');
     const associationText = getTranslation('association');
@@ -446,28 +449,33 @@ function updateResponsiveTableHeaders() {
                 content: "${rankText}";
             }
             
-            #men-table td:nth-of-type(2):before,
+             #men-table td:nth-of-type(2):before,
             #women-table td:nth-of-type(2):before {
-                content: "${playerText}";
+                content: "${ittfRankText}";
             }
-            
+
             #men-table td:nth-of-type(3):before,
             #women-table td:nth-of-type(3):before {
-                content: "${birthYearText}";
+                content: "${playerText}";
             }
             
             #men-table td:nth-of-type(4):before,
             #women-table td:nth-of-type(4):before {
-                content: "${associationText}";
+                content: "${birthYearText}";
             }
             
             #men-table td:nth-of-type(5):before,
             #women-table td:nth-of-type(5):before {
-                content: "${ratingText}";
+                content: "${associationText}";
             }
             
             #men-table td:nth-of-type(6):before,
             #women-table td:nth-of-type(6):before {
+                content: "${ratingText}";
+            }
+            
+            #men-table td:nth-of-type(7):before,
+            #women-table td:nth-of-type(7):before {
                 content: "${errorText}";
             }
             

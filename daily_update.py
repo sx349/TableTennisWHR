@@ -271,7 +271,7 @@ def whr_calc(matches, w2):
     return ratings
 
 
-def rankings(ratings, all_players, w2, today):
+def rankings(ratings, ittf_ranks, all_players, w2, today):
     one_year = today - 365
 
     recent = ratings[ratings["date"] > one_year]
@@ -282,13 +282,17 @@ def rankings(ratings, all_players, w2, today):
     latest["name"] = latest["name"].astype(int)
     latest = latest.rename(columns={"name": "id"})
     latest = latest.merge(all_players, on="id", how="left")
-    latest = latest.sort_values("rating", ascending=False).reset_index(drop=True)
+    latest = (
+        latest.sort_values("rating", ascending=False).iloc[:100].reset_index(drop=True)
+    )
     latest["name_zh"] = latest["name_zh"].fillna(latest["name"])
     latest["assoc_zh"] = latest["assoc_zh"].fillna("")
+    latest = latest.merge(ittf_ranks, on="id", how="left")
     result = []
     for idx, row in latest.iterrows():
         data = {
             "rank": idx + 1,
+            "ittf_rank": str(int(row["ittf_rank"])) if row["ittf_rank"] > 0 else "-",
             "id": row["id"],
             "name": row["name"],
             "name_zh": row["name_zh"],
@@ -328,7 +332,7 @@ def men_single_rating(last_info):
     return None
 
 
-def men_single_ranking(last_info, all_players):
+def men_single_ranking(last_info, all_players, men_ittf):
 
     conn = sqlite3.connect("DATA.DB")
     men_ratings = pd.read_sql_query("SELECT * FROM men_ratings", conn)
@@ -337,7 +341,7 @@ def men_single_ranking(last_info, all_players):
     TODAY = datetime.datetime.now()
     today = (TODAY - pd.to_datetime(MIN_DATE)).days
 
-    men_ranking = rankings(men_ratings, all_players, MEN_W2, today)
+    men_ranking = rankings(men_ratings, men_ittf, all_players, MEN_W2, today)
 
     last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open("LAST_INFO.JSON", "w") as file:
@@ -374,7 +378,7 @@ def women_single_rating(last_info):
     return None
 
 
-def women_single_ranking(last_info, all_players):
+def women_single_ranking(last_info, all_players, women_ittf):
 
     conn = sqlite3.connect("DATA.DB")
     women_ratings = pd.read_sql_query("SELECT * FROM women_ratings", conn)
@@ -383,7 +387,7 @@ def women_single_ranking(last_info, all_players):
     TODAY = datetime.datetime.now()
     today = (TODAY - pd.to_datetime(MIN_DATE)).days
 
-    women_ranking = rankings(women_ratings, all_players, WOMEN_W2, today)
+    women_ranking = rankings(women_ratings, women_ittf, all_players, WOMEN_W2, today)
 
     last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open("LAST_INFO.JSON", "w") as file:
@@ -393,6 +397,31 @@ def women_single_ranking(last_info, all_players):
         json.dump(women_ranking, file)
 
     return None
+
+
+def get_ittf_ranking(session, gender):
+    if gender == "men":
+        number = 57
+    else:
+        number = 58
+    ittf_ranks = []
+    rank_per_page = 250
+    for i in range(5):
+        response = session.get(
+            f"https://results.ittf.link/index.php/ittf-rankings/ittf-ranking-{gender}-singles/list/{number}?resetfilters=0&clearordering=0&clearfilters=0&limit{number}={rank_per_page}&limitstart{number}={i*rank_per_page}&format=json"
+        )
+        data = response.json()[0]
+        if not data:
+            break
+        ranks = pd.DataFrame(data)
+        ranks = ranks[
+            [f"vw_rank_{gender[0]}s___Num_raw", f"vw_rank_{gender[0]}s___PID_raw"]
+        ]
+        ranks.columns = ["ittf_rank", "id"]
+        ranks["ittf_rank"] = ranks["ittf_rank"].fillna(-1)
+        ittf_ranks.append(ranks)
+    ittf_ranks = pd.concat(ittf_ranks).reset_index(drop=True)
+    return ittf_ranks
 
 
 def hist_rankings(ratings, eval_date, w2):
@@ -509,42 +538,47 @@ def women_hist_ranking(last_info):
 
 
 def daily_update():
+    stage = 0
 
     try:
         session, last_info = init_session()
         new_events = get_new_events(session, last_info)
 
         if not new_events.empty:
+            stage = 1
             new_matches_raw = get_new_matches_raw(session, last_info, new_events)
             get_new_players(session, last_info, new_matches_raw)
-
+            stage = 2
             conn = sqlite3.connect("DATA.DB")
             all_players = pd.read_sql_query("SELECT * FROM players", conn)
             conn.close()
-
+            stage = 3
             process_new_matches(last_info, all_players, new_matches_raw, new_events)
             men_single_rating(last_info)
+            stage = 4
             women_single_rating(last_info)
-
+        stage = 5
         conn = sqlite3.connect("DATA.DB")
         all_players = pd.read_sql_query("SELECT * FROM players", conn)
         pc = pd.read_sql_query("SELECT * FROM players_chinese", conn)
         ac = pd.read_sql_query("SELECT * FROM associations_chinese", conn)
         conn.close()
-
         all_players = all_players.merge(
             pc[["id", "name_zh"]], on="id", how="left"
         ).merge(ac, on="assoc", how="left")
-
-        men_single_ranking(last_info, all_players)
-        women_single_ranking(last_info, all_players)
-
+        stage = 6
+        men_ittf = get_ittf_ranking(session, "men")
+        women_ittf = get_ittf_ranking(session, "women")
+        stage = 7
+        men_single_ranking(last_info, all_players, men_ittf)
+        women_single_ranking(last_info, all_players, women_ittf)
+        stage = 8
         men_hist_ranking(last_info)
         women_hist_ranking(last_info)
 
         return True
     except Exception as e:
-        logging.error(f"Error in daily update process: {str(e)}")
+        logging.error(f"Reached Stage {stage}. Error in daily update process: {str(e)}")
         return False
 
 
