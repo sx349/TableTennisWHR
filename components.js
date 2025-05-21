@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
             // Continue with page-specific initialization
             initializePage();
 
+            // Apply translations
+            applyTranslations();
+
             // Add scroll buttons
             addScrollButtons();
 
