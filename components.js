@@ -5,8 +5,14 @@ document.addEventListener('DOMContentLoaded', function () {
         // After header loads, handle header-specific elements
         initializeHeader();
 
+        // Apply translations
+        applyTranslations();
+
         // Load footer after header is loaded
         loadComponent('footer-container', 'footer.html', function () {
+
+            // Apply translations
+            applyTranslations();
 
             // Initialize language switcher
             initializeLanguageSwitcher();
@@ -17,8 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
             // Add scroll buttons
             addScrollButtons();
 
-            // After footer loads, apply translations
-            applyTranslations();
         });
     });
 });

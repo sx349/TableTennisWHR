@@ -121,6 +121,10 @@ const translations = {
         'active-prediction': 'Predicted',
         'mens-top-players': 'Men\'s Single Top Players',
         'womens-top-players': 'Women\'s Single Top Players',
+
+        'loading-photo': 'Loading photo...',
+        'no-photo': 'No photo available',
+        'error-loading-photo': 'Error loading photo',
     },
     zh: {
         // Page titles
@@ -242,7 +246,11 @@ const translations = {
         'retired': '不再记入排名',
         'active-prediction': '预测',
         'mens-top-players': '男子单打顶尖选手',
-        'womens-top-players': '女子单打顶尖选手'
+        'womens-top-players': '女子单打顶尖选手',
+
+        'loading-photo': '正在加载照片...',
+        'no-photo': '没有可用照片',
+        'error-loading-photo': '加载照片时出错',
     }
 };
 

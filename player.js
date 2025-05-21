@@ -26,15 +26,6 @@ function fetchPlayerData(playerId) {
                 return;
             }
 
-            // Display player information
-            displayPlayerInfo(data.player);
-
-            // Display rating history
-            displayRatingHistory(data.ratings, data.player.gender);
-
-            // Create rating chart
-            createRatingChart(data.ratings);
-
             // Update page title based on current language
             const currentLang = getCurrentLanguage();
             let displayName = data.player.name;
@@ -46,6 +37,19 @@ function fetchPlayerData(playerId) {
 
             // Update page title
             document.title = `${displayName} | ${getTranslation('player-title')}`;
+
+            // Display player information
+            displayPlayerInfo(data.player);
+
+            // Add this code to fetch player photo
+            fetchPlayerPhoto(data.player.id);
+
+            // Display rating history
+            displayRatingHistory(data.ratings, data.player.gender);
+
+            // Create rating chart
+            createRatingChart(data.ratings);
+
         })
         .catch(error => {
             console.error('Error fetching player data:', error);
@@ -79,6 +83,40 @@ function displayPlayerInfo(player) {
     // Get the latest rating if available
     const latestRatingElement = document.getElementById('player-rating');
     latestRatingElement.textContent = getTranslation('loading');
+}
+
+function fetchPlayerPhoto(playerId) {
+    fetch(`player_photo.php?id=${playerId}`)
+        .then(response => response.json())
+        .then(data => {
+            const photoContainer = document.getElementById('player-photo');
+            if (!photoContainer) return;
+
+            if (data.success && data.photoUrl) {
+                // Clear any loading text
+                photoContainer.innerHTML = '';
+
+                // Create and add the image
+                const img = document.createElement('img');
+                img.src = data.photoUrl;
+                img.alt = document.getElementById('player-name').textContent;
+                img.className = 'player-photo-img';
+                photoContainer.appendChild(img);
+
+                // Add class to container to show we have a photo
+                document.querySelector('.player-info').classList.add('has-photo');
+            } else {
+                // If no photo found, show a placeholder or message
+                photoContainer.innerHTML = `<div class="no-photo">${getTranslation('no-photo')}</div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching player photo:', error);
+            const photoContainer = document.getElementById('player-photo');
+            if (photoContainer) {
+                photoContainer.innerHTML = `<div class="no-photo">${getTranslation('error-loading-photo')}</div>`;
+            }
+        });
 }
 
 function displayRatingHistory(ratings, gender) {
