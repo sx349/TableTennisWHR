@@ -32,30 +32,41 @@ def init_session():
 
     with open("last_info.json", "r") as file:
         last_info = json.load(file)
-    last_info
-
-    # initiate session
 
     url = "https://results.ittf.link/index.php"
     username = "scraper"
     password = "Scraper@2025"
 
     session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+    })
     response = session.get(url)
 
     soup = BeautifulSoup(response.text, "html.parser")
     token_input = soup.find(
         "input", {"type": "hidden", "name": re.compile("[a-f0-9]{32}")}
     )
+    if token_input is None:
+        raise ValueError(
+            f"CSRF token not found. Status: {response.status_code}, URL: {response.url}. "
+            f"Inputs found: {[i.attrs for i in soup.find_all('input')]}"
+        )
 
     token_name = token_input.get("name")
     token_value = token_input.get("value")
+
+    return_input = soup.find("input", {"type": "hidden", "name": "return"})
+    return_value = return_input.get("value") if return_input else ""
 
     login_data = {
         "username": username,
         "password": password,
         "option": "com_users",
         "task": "user.login",
+        "return": return_value,
         token_name: token_value,
     }
 
@@ -63,44 +74,71 @@ def init_session():
     return session, last_info
 
 
-def get_new_events(session, last_info):
+def get_missing_match_events(session, last_info):
 
-    # get new events
+    all_rows = []
+    seen_ids = set()
+    limit = 200
+    page = 0
+    while True:
+        response = session.get(
+            f"https://results.ittf.link/index.php/events/list/27?resetfilters=0&clearordering=0&clearfilters=0&limit27={limit}&limitstart27={page * limit}&format=json"
+        )
+        data = response.json()
+        if not data or not data[0]:
+            break
+        new_rows = [
+            row for row in data[0]
+            if row["vw_tournaments___tournament_id_raw"] not in seen_ids
+        ]
+        if not new_rows:
+            break
+        seen_ids.update(row["vw_tournaments___tournament_id_raw"] for row in data[0])
+        all_rows.extend(new_rows)
+        if len(data[0]) < limit:
+            break
+        page += 1
+        time.sleep(random.uniform(0.5, 1))
 
-    response = session.get(
-        "https://results.ittf.link/index.php/events/list/27?resetfilters=0&clearordering=0&clearfilters=0&limit27=200&format=json"
-    )
-    data = response.json()[0]
-    new_events = pd.DataFrame(data)
-    new_events = new_events[
+    all_events = pd.DataFrame(all_rows)[
         [
             "vw_tournaments___tournament_id_raw",
             "vw_tournaments___tour_end_raw",
             "vw_tournaments___matches",
         ]
     ]
-    new_events.columns = ["tournament", "end_date", "matches"]
-    new_events["matches"] = new_events["matches"].apply(
+    all_events.columns = ["tournament", "end_date", "matches"]
+    all_events["matches"] = all_events["matches"].apply(
         lambda x: int(x.split(">")[1].split("<")[0])
     )
-    new_events = new_events.set_index("tournament")
 
-    last_event = last_info["event"]
-    new_events = new_events.loc[:last_event].iloc[:-1].reset_index()
+    conn = sqlite3.connect("DATA.DB")
+    events_with_matches = set(
+        pd.read_sql_query("SELECT DISTINCT tournament FROM matches", conn)["tournament"]
+    )
+    existing_events = set(
+        pd.read_sql_query("SELECT DISTINCT tournament FROM events", conn)["tournament"]
+    )
+    conn.close()
 
-    if not new_events.empty:
-        last_event = new_events.iloc[0, 0]
-        last_info["event"] = int(last_event)
-        last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open("last_info.json", "w") as file:
-            json.dump(last_info, file)
+    new_to_db = all_events[~all_events["tournament"].isin(existing_events)]
+    if not new_to_db.empty:
         conn = sqlite3.connect("DATA.DB")
-        new_events[["tournament", "end_date"]].to_sql(
+        new_to_db[["tournament", "end_date"]].to_sql(
             "events", conn, if_exists="append", index=False
         )
         conn.close()
 
-    return new_events
+    missing = all_events[
+        (all_events["matches"] > 0) & (~all_events["tournament"].isin(events_with_matches))
+    ].reset_index(drop=True)
+
+    if not missing.empty:
+        last_info["data_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        with open("last_info.json", "w") as file:
+            json.dump(last_info, file)
+
+    return missing
 
 
 def get_new_matches_raw(session, last_info, new_events):
@@ -117,6 +155,8 @@ def get_new_matches_raw(session, last_info, new_events):
             data = response.json()
             sleep_time = random.uniform(0, 1)
             time.sleep(sleep_time)
+            if not data or not data[0]:
+                continue
             df = pd.DataFrame(data[0])
             df = df[
                 [
@@ -148,7 +188,7 @@ def get_new_matches_raw(session, last_info, new_events):
     new_matches_raw = pd.concat(df_list).reset_index(drop=True)
 
     if not new_matches_raw.empty:
-        last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        last_info["data_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         with open("last_info.json", "w") as file:
             json.dump(last_info, file)
 
@@ -161,7 +201,7 @@ def get_new_players(session, last_info, new_matches_raw):
         for x in new_matches_raw[
             ["player_a", "player_b", "player_x", "player_y"]
         ].values.flatten()
-        if ~np.isnan(x)
+        if pd.notna(x)
     )
     conn = sqlite3.connect("DATA.DB")
     cursor = conn.cursor()
@@ -175,7 +215,8 @@ def get_new_players(session, last_info, new_matches_raw):
         url = f"https://results.ittf.link/index.php?option=com_fabrik&view=list&listid=60&Itemid=391&resetfilters=1&vw_profiles___player_id_raw[value][]={player}&format=json"
         response = session.get(url)
         data = response.json()
-        df_list += data[0]
+        if data and data[0]:
+            df_list += data[0]
     new_players = pd.DataFrame(df_list)
 
     if not new_players.empty:
@@ -189,10 +230,10 @@ def get_new_players(session, last_info, new_matches_raw):
         ]
         new_players.columns = ["id", "name", "gender", "profile"]
         new_players["yob"] = new_players["profile"].apply(
-            lambda x: x.split("<br/>")[3].split(": ")[1]
+            lambda x: BeautifulSoup(x.split("<br/>")[3].split(": ")[1], "html.parser").get_text()
         )
         new_players["assoc"] = new_players["profile"].apply(
-            lambda x: x.split("<br/>")[1].split(": ")[1]
+            lambda x: BeautifulSoup(x.split("<br/>")[1], "html.parser").get_text()
         )
         new_players["ma"] = new_players["name"].apply(
             lambda x: x.split("(")[1].rstrip(")")
@@ -202,7 +243,7 @@ def get_new_players(session, last_info, new_matches_raw):
         )
         new_players = new_players.drop(columns="profile")
 
-        last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        last_info["data_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         with open("last_info.json", "w") as file:
             json.dump(last_info, file)
         conn = sqlite3.connect("DATA.DB")
@@ -230,7 +271,7 @@ def process_new_matches(last_info, all_players, new_matches_raw, new_events):
         )
 
     if not new_matches.empty:
-        last_info["data_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        last_info["data_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         with open("last_info.json", "w") as file:
             json.dump(last_info, file)
         conn = sqlite3.connect("DATA.DB")
@@ -321,7 +362,7 @@ def men_single_rating(last_info):
 
     men_ratings = whr_calc(men_matches, MEN_W2)
 
-    last_info["rating_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    last_info["rating_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
@@ -343,7 +384,7 @@ def men_single_ranking(last_info, all_players, men_ittf):
 
     men_ranking = rankings(men_ratings, men_ittf, all_players, MEN_W2, today)
 
-    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    last_info["ranking_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
@@ -367,7 +408,7 @@ def women_single_rating(last_info):
 
     women_ratings = whr_calc(women_matches, WOMEN_W2)
 
-    last_info["rating_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    last_info["rating_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
@@ -389,7 +430,7 @@ def women_single_ranking(last_info, all_players, women_ittf):
 
     women_ranking = rankings(women_ratings, women_ittf, all_players, WOMEN_W2, today)
 
-    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    last_info["ranking_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
@@ -415,7 +456,7 @@ def get_ittf_ranking(session, gender):
             break
         ranks = pd.DataFrame(data)
         ranks = ranks[
-            [f"vw_rank_{gender[0]}s___Num_raw", f"vw_rank_{gender[0]}s___PID_raw"]
+            [f"fab_rank_{gender[0]}s___Num_raw", f"fab_rank_{gender[0]}s___PID_raw"]
         ]
         ranks.columns = ["ittf_rank", "id"]
         ranks["ittf_rank"] = ranks["ittf_rank"].fillna(-1)
@@ -540,7 +581,7 @@ def men_hist_ranking(last_info, all_players):
     with open("men_top_players.json", "w") as file:
         json.dump({"players": top_players}, file)
 
-    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    last_info["ranking_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
@@ -620,7 +661,7 @@ def women_hist_ranking(last_info, all_players):
     with open("women_top_players.json", "w") as file:
         json.dump({"players": top_players}, file)
 
-    last_info["ranking_time"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    last_info["ranking_time"] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     with open("last_info.json", "w") as file:
         json.dump(last_info, file)
 
@@ -632,7 +673,7 @@ def daily_update():
 
     try:
         session, last_info = init_session()
-        new_events = get_new_events(session, last_info)
+        new_events = get_missing_match_events(session, last_info)
 
         if not new_events.empty:
             stage = 1

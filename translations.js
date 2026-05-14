@@ -46,7 +46,7 @@ const translations = {
         'website-maintained': 'Website maintained by',
         'whr-algorithm': 'WHR algorithm credited to',
         'whr-implementation': 'WHR Python implementation by',
-        'copyright': '© 2025 Table Tennis Whole-History Rating (WHR)',
+        'copyright': '© 2025 - 2026 Table Tennis Whole-History Rating (WHR)',
         'total-views': 'Total Views:',
         'total-visitors': 'Total Visitors:',
 
@@ -172,7 +172,7 @@ const translations = {
         'website-maintained': '网站维护：',
         'whr-algorithm': 'WHR算法原作者：',
         'whr-implementation': 'WHR算法Python实现：',
-        'copyright': '© 2025 乒乓球全历史等级分（WHR）',
+        'copyright': '© 2025 - 2026 乒乓球全历史等级分（WHR）',
         'total-views': '总浏览量：',
         'total-visitors': '总访问者：',
 

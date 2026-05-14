@@ -126,22 +126,19 @@ function fetchUpdateTimes() {
 
 function convertToBeijiingTime(timeString) {
     try {
-        // Parse the input time string
-        const date = new Date(timeString);
+        // Parse as UTC by appending Z, then add 8 hours for Beijing (UTC+8)
+        const date = new Date(timeString.replace(' ', 'T') + 'Z');
 
         // Check if the date is valid
         if (isNaN(date.getTime())) {
             return timeString; // Return the original if parsing failed
         }
 
-        // Convert to Beijing time (UTC+8)
-        // First get UTC time by adding the local timezone offset
-        const utcTime = date.getTime() + (date.getTimezoneOffset() * 60000);
-        // Then add the Beijing timezone offset (8 hours)
-        const beijingTime = new Date(utcTime + (8 * 3600000));
+        const beijingTime = new Date(date.getTime() + (8 * 3600000));
 
-        // Format the date 
+        // Format the date
         return beijingTime.toLocaleString('en-US', {
+            timeZone: 'UTC',
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
